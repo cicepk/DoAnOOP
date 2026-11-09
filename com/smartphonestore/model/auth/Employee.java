@@ -21,8 +21,8 @@ public abstract class Employee implements ISalaryCalculable {
             this.hireYear = hireYear;
     }
     public int getSeniorityYears(){
-        // Lấy năm nay - năm vào làm
-        return LocalDate.now().getYear() - hireYear;
+        // Lấy năm nay - năm vào làm, không để âm
+        return Math.max(0, LocalDate.now().getYear() - hireYear);
     }
     // Lớp con viết riêng trong file
     public abstract String getExtraForFile();
@@ -41,11 +41,35 @@ public abstract class Employee implements ISalaryCalculable {
     public String getId() { return id; }
     public String getFullName() { return fullName; }
     public double getBaseSalary() { return baseSalary; } 
+    public String getPhoneNumber() { return phoneNumber; }
+    public Role getRole() { return role; }
+    public int getHireYear() { return hireYear; }
 
-    public void setBaseSalary(double baseSalary) {
-        // Lương không âm
-        if (baseSalary >= 0) {
-            this.baseSalary = baseSalary;
-        }
+    // Cho menu kiểm tra trước khi tạo object
+    public static boolean isValidText(String text) {
+        return text != null && !text.trim().isEmpty() && !text.contains("|");
     }
+    public static boolean isValidPhone(String phone) {
+        return phone != null && phone.matches("0//d{9}");
+    }
+
+    public boolean setFullName(String fullName) {
+        if (!isValidText(fullName)) return false;
+        this.fullName = fullName.trim();
+        return true;
+    }
+
+    public boolean setPhoneNumber(String phoneNumber) {
+        if (!isValidPhone(phoneNumber)) return false;
+        this.phoneNumber = phoneNumber;
+        return true;
+    }
+
+    public boolean  setBaseSalary(double baseSalary) {
+        // Lương không âm
+        if (baseSalary < 0) return false;
+        this.baseSalary = baseSalary;
+        return true;
+    }
+
 }
