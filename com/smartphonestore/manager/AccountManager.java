@@ -193,4 +193,24 @@ public class AccountManager {
         if (acc.getStatus().equals("ACTIVE")) acc.lockToggle();
         return saveToFile();
     }
+
+    // ===================== DÀNH CHO TV4 (KHÁCH HÀNG) =====================
+
+    // Nhân viên cấp tài khoản cho khách. False nếu trùng username, khách đã có tài khoản,
+    // mật khẩu không hợp lệ hoặc mã không phải CUSxx
+    public boolean createCustomerAccount(String customerId, String username, String password) {
+        return createAccount(username, password, Role.CUSTOMER, customerId) == null;
+    }
+
+    // Xóa khách thì XÓA luôn tài khoản (không khóa như nhân viên),
+    // vì mã khách có thể được cấp lại, tài khoản cũ sẽ đăng nhập nhầm vào khách mới.
+    // Chỉ xóa tài khoản CUSTOMER để không lỡ tay xóa tài khoản nhân viên
+    public boolean removeAccountsByOwnerId(String ownerId) {
+        if (ownerId == null) return false;
+        String id = ownerId.trim();
+        boolean removed = accounts.removeIf(acc ->
+            acc.getRole() == Role.CUSTOMER && acc.getLinkedId().equalsIgnoreCase(id));
+        if (!removed) return false;
+        return saveToFile();
+    }
 }
