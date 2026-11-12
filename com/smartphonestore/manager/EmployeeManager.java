@@ -90,7 +90,7 @@ public class EmployeeManager {
         String k = key.trim().toLowerCase();
         for (Employee e : employees) {
             if (e.getFullName().toLowerCase().contains(k) || 
-                e.getId().trim().contains(k)) {
+                e.getId().trim().toLowerCase().contains(k)) {
                     result.add(e);
                 }
         }

@@ -83,7 +83,7 @@ public class LoginView {
     private void handleRegister() {
         System.out.println("\n--- ĐĂNG KÝ TÀI KHOẢN KHÁCH HÀNG ---");
         System.out.println("(Bạn cần có mã khách hàng do cửa hàng cấp, ví dụ CUS01)");
-        String customerId = InputHelper.readString("➤ Mã khách hàng: ").toUpperCase();
+        String customerId = InputHelper.readString("=> Mã khách hàng: ").toUpperCase();
 
         if (!accountManager.customerExists(customerId)) {
             System.out.println("[X] Không tìm thấy hồ sơ khách hàng " + customerId
@@ -95,9 +95,9 @@ public class LoginView {
             return;
         }
 
-        String username = InputHelper.readString("➤ Tên đăng nhập mới: ");
-        String password = InputHelper.readString("➤ Mật khẩu (từ 6 ký tự): ");
-        String confirm = InputHelper.readString("➤ Nhập lại mật khẩu: ");
+        String username = InputHelper.readString("=> Tên đăng nhập mới: ");
+        String password = InputHelper.readString("=> Mật khẩu (từ 6 ký tự): ");
+        String confirm = InputHelper.readString("=> Nhập lại mật khẩu: ");
         if (!password.equals(confirm)) {
             System.out.println("[X] Mật khẩu nhập lại không khớp!");
             return;
