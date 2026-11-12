@@ -1,0 +1,4 @@
+STANDARD|KH001|Nguyen Van An|0901234567|an@gmail.com|20000000|3
+STANDARD|KH002|Tran Thi Binh|0912345678|binh@gmail.com|2000000|1
+VIP|KH003|Le Van Cuong|0923456789|cuong@gmail.com|30000000|0.05
+STANDARD|KH004|Pham Thi Dung|0934567890|dung@gmail.com|0|0
