@@ -8,7 +8,9 @@
 Để mã nguồn của cả 4 thành viên khi ghép lại không bị xung đột, dự án tuân theo cấu trúc phân tầng (Layered Architecture):
 
 ```text
-src/
+src/                                           # Gốc repo - chạy chương trình từ thư mục này
+├── data/                                      # File .txt dữ liệu dùng chung (đọc bằng đường dẫn "data/xxx.txt")
+├── docs/                                      # Tài liệu dự án (*.md)
 └── com/
     └── smartphonestore/
         ├── Main.java                          # Điểm vào duy nhất (Main Entry Point)
@@ -32,6 +34,8 @@ src/
         │   ├── AdminMenu.java                 # Menu chức năng của Admin
         │   ├── WarehouseMenu.java             # Menu chức năng của Nhân viên kho
         │   └── SalesMenu.java                 # Menu chức năng của Nhân viên bán hàng
+        │
+        ├── exception/                         # Ngoại lệ dùng chung (ValidationException.java)
         │
         └── util/                              # Thư viện tiện ích dùng chung
             ├── FileIO.java                    # Đọc/ghi file UTF-8 an toàn

@@ -1,6 +1,6 @@
-package src.com.smartphonestore.manager;
+package com.smartphonestore.manager;
 
-import src.com.smartphonestore.model.product.*;
+import com.smartphonestore.model.product.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;

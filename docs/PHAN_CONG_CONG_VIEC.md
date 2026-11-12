@@ -216,7 +216,7 @@
 
 #### 4. Những điểm phối hợp & ảnh hưởng đến thành viên khác:
 1. **Role CUSTOMER không còn dùng:** TV1 loại bỏ role `CUSTOMER` khỏi enum `Role.java` và `accounts.txt`. Hệ thống chỉ điều hướng 3 vai trò nội bộ: `ADMIN`, `WAREHOUSE`, `SALES`.
-2. **Đổi tên class giao diện:** Đổi từ `UserMenu.java` thành `CustomerMenu.java` (đặt trong package `src.com.smartphonestore.view`). Constructor nhận `(CustomerManager manager, Role currentRole)`.
+2. **Đổi tên class giao diện:** Đổi từ `UserMenu.java` thành `CustomerMenu.java` (đặt trong package `com.smartphonestore.view`). Constructor nhận `(CustomerManager manager, Role currentRole)`.
 3. **Cách gọi Menu:** TV1 (Admin) và TV3 (Sales) thêm 1 mục *"Quản lý Khách hàng & Dịch vụ"* vào menu của mình, cả hai cùng gọi: `new CustomerMenu(customerManager, currentRole).displayMenu()`.
 4. **Phân hệ Bảo hành (WarrantyClaim):** Thuộc toàn quyền quản lý của TV4 (tiếp nhận máy lỗi tại quầy và cập nhật trạng thái sửa chữa). Menu Kho (TV2) không cần làm bảo hành để tránh trùng lặp trách nhiệm.
 5. **Phân quyền Xóa khách hàng:** Trong chức năng `[4]` Xóa khách, kiểm tra `if (currentRole != Role.ADMIN)` thì thông báo từ chối (Chỉ Quản trị viên Admin mới có quyền xóa dữ liệu khách hàng).

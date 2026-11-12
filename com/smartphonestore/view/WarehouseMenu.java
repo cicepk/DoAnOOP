@@ -1,8 +1,8 @@
-package src.com.smartphonestore.view;
+package com.smartphonestore.view;
 
-import src.com.smartphonestore.exception.ValidationException;
-import src.com.smartphonestore.manager.ProductManager;
-import src.com.smartphonestore.model.product.*;
+import com.smartphonestore.exception.ValidationException;
+import com.smartphonestore.manager.ProductManager;
+import com.smartphonestore.model.product.*;
 import java.util.*;
 
 public class WarehouseMenu {

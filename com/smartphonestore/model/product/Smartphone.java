@@ -1,6 +1,6 @@
-package src.com.smartphonestore.model.product;
+package com.smartphonestore.model.product;
 
-import src.com.smartphonestore.exception.ValidationException;
+import com.smartphonestore.exception.ValidationException;
 
 public class Smartphone extends Phone implements IDiscountable {
     // thuộc tính riêng ROM
