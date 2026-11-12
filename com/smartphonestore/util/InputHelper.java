@@ -36,4 +36,22 @@ public class InputHelper {
             }
         }
     }
+    // Số thực trong khoảng [min, max] (VD: tỷ lệ hoa hồng 0 - 1)
+    public static double readDouble(String text, double min, double max) {
+        while (true) {
+            double value = readDouble(text, min);
+            if (value <= max) return value;
+            System.out.println("(!) Giá trị phải <= " + max + ".");
+        }
+    }
+    // Hỏi Y/N, nhập sai thì hỏi lại
+    public static boolean readYesNo(String text) {
+        while (true) {
+            System.out.print(text);
+            String input = scanner.nextLine().trim();
+            if (input.equalsIgnoreCase("Y")) return true;
+            if (input.equalsIgnoreCase("N")) return false;
+            System.out.println("(!) Vui lòng nhập Y hoặc N!");
+        }
+    }
 }
