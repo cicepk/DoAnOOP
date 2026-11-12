@@ -10,10 +10,12 @@ public class Account {
     private Role role;
     private String status;
     private String lastLoginTime;
-    private final String employeeId;
-    
+    // Nhân viên (ADMIN/WAREHOUSE/SALES) -> mã EMPxx trong employees.txt
+    // Khách hàng (CUSTOMER)             -> mã CUSxx trong customers.txt
+    private final String linkedId;
+
     public Account(String id, String username, String password, Role role,
-                   String status, String lastLoginTime, String employeeId) {
+                   String status, String lastLoginTime, String linkedId) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -22,17 +24,30 @@ public class Account {
         // File có thể để trống cột này
         this.lastLoginTime = (lastLoginTime == null || lastLoginTime.trim().isEmpty())
             ? "Chưa đăng nhập" : lastLoginTime;
-        this.employeeId = employeeId;
+        this.linkedId = linkedId;
+    }
+    // Kiểm tra mã liên kết có đúng loại với role không (dùng trước khi tạo tài khoản)
+    public static boolean isValidLink(Role role, String linkedId) {
+        if (role == null || linkedId == null) return false;
+        String prefix = role.isStaff() ? "EMP" : "CUS";
+        return linkedId.trim().toUpperCase().startsWith(prefix);
+    }
+    public boolean isLinkValid() {
+        return isValidLink(role, linkedId);
     }
     public String getId() { return id; }
     public String getUsername() { return username; }
     public Role getRole() { return role; }
     public String getStatus() { return status; }
     public String getLastLoginTime() { return lastLoginTime; }
-    public String getEmployeeId() { return employeeId; }
+    public String getLinkedId() { return linkedId; }
     // Đổi chức vụ nhân viên thì role tài khoản phải đổi theo
     public boolean setRole(Role role) {
         if (role == null) {
+            return false;
+        }
+        // Không cho đổi qua lại giữa nhân viên và khách, vì linkedId sẽ sai loại
+        if (role.isStaff() != this.role.isStaff()) {
             return false;
         }
         this.role = role;
@@ -71,13 +86,13 @@ public class Account {
 
     public String toFileString() {
         return id + "|" + username + "|" + password + "|" + role.name() + "|"
-            + status + "|" + lastLoginTime + "|" + employeeId;
+            + status + "|" + lastLoginTime + "|" + linkedId;
     }
 
     public void display() {
         // %-6s: chuỗi, canh trái, rộng 6 ô. %n: xuống dòng
         System.out.printf("%-6s | %-12s | %-10s | %-7s | %-6s | %s%n",
-            id, username, role.name(), status, employeeId, lastLoginTime);
+            id, username, role.name(), status, linkedId, lastLoginTime);
     }
 
 }

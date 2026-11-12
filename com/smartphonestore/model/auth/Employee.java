@@ -50,7 +50,7 @@ public abstract class Employee implements ISalaryCalculable {
         return text != null && !text.trim().isEmpty() && !text.contains("|");
     }
     public static boolean isValidPhone(String phone) {
-        return phone != null && phone.matches("0//d{9}");
+        return phone != null && phone.matches("0\\d{9}"); // 0 + 9 chữ số
     }
 
     public boolean setFullName(String fullName) {
