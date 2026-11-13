@@ -1,3 +1,5 @@
-# Format: claimId|customerId|productId|issueDescription|createdDate|claimStatus(TIEP_NHAN/DANG_SUA/HOAN_TAT/TU_CHOI)
-CLM01|CUS02|PRD03|Màn hình chớp tắt khi cắm sạc|18/10/2026 14:00:00|DANG_SUA
-CLM02|CUS01|PRD06|Củ sạc không vào điện sau 2 tuần dùng|19/10/2026 08:30:00|TIEP_NHAN
+# Format: claimId|customerId|productId|serialNumber|issueDescription|saleDate|warrantyMonths|createdDate|claimStatus
+CLM01|CUS01|PRD03|IMEI8603001014|Màn hình chớp tắt khi cắm sạc|12/11/2026|18|13/11/2026|DANG_SUA
+CLM02|CUS03|PRD38|SN_SAC_380001|Củ sạc không vào điện sau khi cắm|12/11/2026|6|13/11/2026|TIEP_NHAN
+CLM03|CUS03|PRD01|IMEI8601001001|Mặt kính dính bụi nhẹ ở viền camera, đã vệ sinh|12/11/2026|12|13/11/2026|HOAN_TAT
+CLM04|CUS04|PRD02|IMEI8602001006|Bị rơi nứt màn hình góc dưới, từ chối do tác động ngoại lực|12/11/2026|18|13/11/2026|TU_CHOI
