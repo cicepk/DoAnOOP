@@ -1,4 +1,4 @@
-package src.com.smartphonestore.model.product;
+package com.smartphonestore.model.product;
 
 public abstract class Phone extends Product {
     private String operatingSystem;

@@ -1,4 +1,4 @@
-package src.com.smartphonestore.exception;
+package com.smartphonestore.exception;
 
 public class ValidationException extends RuntimeException {
     public ValidationException(String message) {

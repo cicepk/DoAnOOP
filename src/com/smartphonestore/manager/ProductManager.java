@@ -1,6 +1,6 @@
-package src.com.smartphonestore.manager;
+package com.smartphonestore.manager;
 
-import src.com.smartphonestore.model.product.*;
+import com.smartphonestore.model.product.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -119,18 +119,31 @@ public class ProductManager {
         return updateProductInfo(id, newName, newPrice, newThreshold);
     }
 
-    // Xóa sản phẩm theo ID (xóa luôn cả chi tiết máy liên quan)
+    // Xóa sản phẩm theo ID (chỉ cho phép xóa khi KHÔNG CÓ máy nào ở trạng thái SOLD hoặc WARRANTY)
     public boolean deleteID(String id) {
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getId().equalsIgnoreCase(id.trim())) {
-                products.remove(i);
-                productDetails.removeIf(d -> d.getProductId().equalsIgnoreCase(id.trim()));
-                saveToFile();
-                saveDetailsToFile();
-                return true;
+        if (id == null || id.trim().isEmpty()) return false;
+        String pid = normalizeId(id);
+        Product p = findByID(pid);
+        if (p == null) return false;
+
+        // Kiểm tra xem sản phẩm có máy nào đã bán (SOLD) hoặc đang bảo hành (WARRANTY) không
+        for (ProductDetail d : productDetails) {
+            if (d.getProductId().equalsIgnoreCase(pid)) {
+                if (SOLD.equalsIgnoreCase(d.getStatus()) || WARRANTY.equalsIgnoreCase(d.getStatus())) {
+                    System.out.printf("[!] KHONG THE XOA: San pham %s dang co con may o trang thai '%s'!%n",
+                            pid, d.getStatus());
+                    System.out.println("    (Xoa se lam mat du lieu lich su ben Hoa don ban hang hoac Phieu bao hanh).");
+                    return false;
+                }
             }
         }
-        return false;
+
+        // Nếu chỉ có hàng IN_STOCK hoặc chưa có chi tiết máy -> Cho phép xóa an toàn
+        products.removeIf(item -> item.getId().equalsIgnoreCase(pid));
+        productDetails.removeIf(d -> d.getProductId().equalsIgnoreCase(pid));
+        saveToFile();
+        saveDetailsToFile();
+        return true;
     }
 
     // ==================== CÁC HÀM XỬ LÝ SERIAL CHO TOÀN BỘ NHÓM ====================

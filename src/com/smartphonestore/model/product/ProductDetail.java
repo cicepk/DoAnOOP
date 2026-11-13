@@ -1,6 +1,6 @@
-package src.com.smartphonestore.model.product;
+package com.smartphonestore.model.product;
 
-import src.com.smartphonestore.exception.ValidationException;
+import com.smartphonestore.exception.ValidationException;
 
 /**
  * Lớp đại diện cho một con máy / sản phẩm vật lý cụ thể trong kho.

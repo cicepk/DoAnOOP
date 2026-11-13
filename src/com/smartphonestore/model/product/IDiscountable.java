@@ -1,4 +1,4 @@
-package src.com.smartphonestore.model.product;
+package com.smartphonestore.model.product;
 public interface IDiscountable {
  /**
      * Tính giá bán sau khi áp dụng phần trăm chiết khấu
