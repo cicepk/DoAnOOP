@@ -97,12 +97,12 @@ public class WarehouseMenu {
                         break;
                     }
 
-                    System.out.println("\n========================================================================================================================");
-                    System.out.println("                                  BANG CHI TIET CON MAY - " + title);
-                    System.out.println("========================================================================================================================");
-                    System.out.printf(" %-7s │ %-24s │ %-8s │ %-16s │ %-10s │ %-14s │ %-12s │ %-9s%n",
-                            "MA SP", "TEN SAN PHAM", "HANG", "SO SERI / IMEI", "NGAY NHAP", "GIA NHAP", "NHA CUNG CAP", "TRANG THAI");
-                    System.out.println("────────┼──────────────────────────┼──────────┼──────────────────┼────────────┼────────────────┼──────────────┼──────────");
+                    System.out.println("\n===============================================================================================================================");
+                    System.out.println("                                       BANG CHI TIET CON MAY - " + title);
+                    System.out.println("===============================================================================================================================");
+                    System.out.printf(" %-7s │ %-24s │ %-8s │ %-18s │ %-19s │ %-14s │ %-12s │ %-9s%n",
+                            "MA SP", "TEN SAN PHAM", "HANG", "SO SERI / IMEI", "NGAY GIO NHAP", "GIA NHAP", "NHA CUNG CAP", "TRANG THAI");
+                    System.out.println("────────┼──────────────────────────┼──────────┼────────────────────┼─────────────────────┼────────────────┼──────────────┼──────────");
 
                     if (detailsToShow.isEmpty()) {
                         System.out.println("  [!] Khong tim thay con may nao phu hop trong du lieu chi tiet.");
@@ -117,7 +117,7 @@ public class WarehouseMenu {
                             if ("IN_STOCK".equalsIgnoreCase(d.getStatus())) inStockCount++;
                             else soldCount++;
                         }
-                        System.out.println("========================================================================================================================");
+                        System.out.println("===============================================================================================================================");
                         System.out.printf("Tong cong: %d con may (Trong kho: %d | Da xuat ban: %d)%n",
                                 detailsToShow.size(), inStockCount, soldCount);
                     }
@@ -135,10 +135,15 @@ public class WarehouseMenu {
                     String supplier = sc.nextLine().trim();
                     if (supplier.isEmpty()) supplier = "FPT_Synnex";
 
-                    String today = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-                    System.out.print("Nhap ngay nhap kho [dd/MM/yyyy] (Enter mac dinh hom nay: " + today + "): ");
+                    String now = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+                    System.out.print("Nhap ngay gio nhap kho [dd/MM/yyyy HH:mm:ss] (Enter mac dinh: " + now + "): ");
                     String importDate = sc.nextLine().trim();
-                    if (importDate.isEmpty()) importDate = today;
+                    if (importDate.isEmpty()) {
+                        importDate = now;
+                    } else if (importDate.matches("^\\d{2}/\\d{2}/\\d{4}$")) {
+                        String timePart = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+                        importDate = importDate + " " + timePart;
+                    }
 
                     int sessionItemCount = 0;
                     int sessionTotalQty = 0;
