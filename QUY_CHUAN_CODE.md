@@ -5,186 +5,124 @@
 
 ## 1. Cấu Trúc Gói (Package Structure) Chuẩn Dự Án
 
-Để mã nguồn của cả 4 thành viên khi ghép lại không bị xung đột, dự án tuân theo cấu trúc phân tầng (Layered Architecture):
+Dự án tuân theo cấu trúc phân tầng (Layered Architecture) để mã nguồn của cả 4 thành viên khi tích hợp không bị xung đột:
 
 ```text
 src/
 └── com/
     └── smartphonestore/
-        ├── Main.java                          # Điểm vào duy nhất (Main Entry Point)
+        ├── Main.java                          # Điểm vào duy nhất của hệ thống
         │
-        ├── model/                             # Chứa 20 Class thực thể & 4 Interface
-        │   ├── enums/                         # Role.java, OrderStatus.java, ...
+        ├── model/                             # Chứa 20 Class thực thể & 4 Interface chuẩn
+        │   ├── enums/                         # Role.java (ADMIN, WAREHOUSE, SALES), ...
         │   ├── auth/                          # Account.java, ISalaryCalculable.java, Employee.java, ...
-        │   ├── product/                       # IDiscountable.java, Product.java, Phone.java, ...
-        │   ├── sale/                          # IPrintable.java, Invoice.java, Payment.java, ...
-        │   └── customer/                      # ILoyaltyRankable.java, Customer.java, ...
+        │   ├── product/                       # IDiscountable.java, Product.java, Phone.java, Accessory.java, ProductDetail.java
+        │   ├── sale/                          # IPrintable.java, Invoice.java, InvoiceDetail.java, Payment.java, CashPayment.java, ElectronicPayment.java
+        │   └── customer/                      # ILoyaltyRankable.java, Customer.java, StandardCustomer.java, VipCustomer.java, CustomerReview.java, WarrantyClaim.java
         │
-        ├── manager/                           # Các lớp xử lý nghiệp vụ & CRUD
-        │   ├── AccountManager.java            # Quản lý tài khoản & xác thực đăng nhập
-        │   ├── EmployeeManager.java           # Quản lý nhân viên & tính lương
-        │   ├── ProductManager.java            # Quản lý kho, sản phẩm & tồn kho
-        │   ├── InvoiceManager.java            # Quản lý bán hàng & thanh toán
-        │   └── CustomerManager.java           # Quản lý khách hàng, tích điểm, bảo hành
+        ├── manager/                           # Các lớp xử lý nghiệp vụ & lưu trữ
+        │   ├── AccountManager.java            # Quản lý tài khoản đăng nhập (TV1)
+        │   ├── EmployeeManager.java           # Quản lý nhân viên & tính lương (TV1)
+        │   ├── ProductManager.java            # Quản lý kho, serial/IMEI & tồn kho (TV2)
+        │   ├── SalesManager.java              # Quản lý hóa đơn & thanh toán (TV3)
+        │   └── CustomerManager.java           # Quản lý khách hàng, đánh giá & bảo hành (TV4)
         │
         ├── view/                              # Giao diện Console & Menu theo phân quyền
-        │   ├── LoginView.java                 # Màn hình đăng nhập
-        │   ├── AdminMenu.java                 # Menu chức năng của Admin
-        │   ├── WarehouseMenu.java             # Menu chức năng của Nhân viên kho
-        │   └── SalesMenu.java                 # Menu chức năng của Nhân viên bán hàng
+        │   ├── LoginView.java                 # Màn hình đăng nhập & điều hướng
+        │   ├── AdminMenu.java                 # Menu Quản trị viên (TV1)
+        │   ├── WarehouseMenu.java             # Menu Kho hàng (TV2)
+        │   ├── SalesMenu.java                 # Menu Bán hàng (TV3)
+        │   └── CustomerMenu.java              # Menu Khách hàng & Dịch vụ tại quầy (TV4)
         │
         └── util/                              # Thư viện tiện ích dùng chung
+            ├── DateUtil.java                  # Chuẩn hóa ngày giờ (dd/MM/yyyy & dd/MM/yyyy HH:mm:ss)
             ├── FileIO.java                    # Đọc/ghi file UTF-8 an toàn
-            └── InputHelper.java               # Đọc Scanner không bị trôi lệnh, kiểm tra số
+            └── InputHelper.java               # Đọc Scanner an toàn, chống trôi dòng lệnh
 ```
 
 ---
 
-## 2. Quy Ước Đặt Tên & Viết Code OOP
+## 2. Quy Chuẩn Định Dạng File Dữ Liệu (`data/`)
+
+Toàn bộ dữ liệu được lưu bằng file text thuần phân tách bởi dấu gạch đứng `|`, mã hóa chuẩn `UTF-8`:
+
+| Tên File | Phụ Trách | Cấu Trúc Header & Thứ Tự Cột Chuẩn |
+| :--- | :--- | :--- |
+| `accounts.txt` | TV1 | `# Format: id\|username\|password\|role\|status\|lastLoginTime` |
+| `employees.txt` | TV1 | `# Format: id\|fullName\|phoneNumber\|baseSalary\|role\|hireYear\|extraValue` |
+| `products.txt` | TV2 | `# Format: id\|name\|brand\|price\|stockQuantity\|productType\|minThreshold\|extraValue` |
+| `product_details.txt` | TV2 | `# Format: productId\|productName\|serialNumber\|importDate\|importPrice\|supplier\|status` |
+| `invoices.txt` | TV3 | `# Format: id\|customerId\|salesStaffId\|creationDate\|totalAmount\|status(PAID/CANCELLED)\|vatTaxRate` |
+| `invoice_details.txt` | TV3 | `# Format: invoiceId\|productId\|productName\|serialNumber\|unitPrice\|quantity` |
+| `payments.txt` | TV3 | `# Format: id\|invoiceId\|amount\|paymentDate\|method\|transactionCode\|extraData` |
+| `reviews.txt` | TV4 | `# Format: reviewId\|customerId\|productId\|ratingStars\|comment\|reviewDate` |
+| `warranty_claims.txt` | TV4 | `# Format: id\|mã khách\|mã sản phẩm\|seri\|lỗi\|ngày giờ nhận|trạng thái\|ngày bán\|số tháng BH` |
+
+### Quy ước định dạng ngày giờ:
+- **Chỉ sử dụng `DateUtil`** do nhóm xây dựng để đảm bảo tính đồng bộ:
+  - Định dạng ngày: `dd/MM/yyyy` (Ví dụ: `12/11/2026`).
+  - Định dạng ngày kèm giờ: `dd/MM/yyyy HH:mm:ss` (Ví dụ: `12/11/2026 09:30:00`).
+- Phương thức `DateUtil.parse(text)` tự động cắt lấy 10 ký tự đầu (`s.substring(0, 10)`), cho phép đọc an toàn cả chuỗi chỉ có ngày và chuỗi có kèm giờ phút giây.
+
+---
+
+## 3. Quy Chuẩn Vòng Đời Serial & Đồng Bộ Dữ Liệu Giữa Các Thành Viên
+
+Để loại bỏ hoàn toàn tình trạng sai lệch tồn kho, giá nhập và trạng thái máy, các thành viên tuân theo hợp đồng giao tiếp sau:
+
+```mermaid
+stateDiagram-v2
+    [*] --> IN_STOCK: TV2 Nhập hàng vào kho (Good Receipt)
+    IN_STOCK --> SOLD: TV3 Bán hàng (ProductManager.sellSerial)
+    SOLD --> IN_STOCK: TV3 Hủy đơn hàng (ProductManager.returnSerial)
+    SOLD --> WARRANTY: TV4 Nhận bảo hành (setWarrantyStatus(serial, true))
+    WARRANTY --> SOLD: TV4 Trả máy bảo hành (setWarrantyStatus(serial, false))
+```
+
+1. **TV2 cung cấp đầy đủ các phương thức Serial cho toàn nhóm:**
+   - `sellSerial(serial)`: Chuyển serial thành `SOLD`, giảm `stockQuantity` trong `products.txt` đi 1, lưu cả 2 file.
+   - `returnSerial(serial)`: Chuyển serial từ `SOLD` về `IN_STOCK`, tăng `stockQuantity` lên 1, lưu cả 2 file.
+   - `setWarrantyStatus(serial, inWarranty)`: Chuyển đổi trạng thái giữa `SOLD` $\leftrightarrow$ `WARRANTY` (không đổi tồn kho vì máy là của khách).
+   - `checkSellable(serial)`: Trả về `null` nếu máy hợp lệ để bán, hoặc thông báo lỗi nếu máy không ở trạng thái `IN_STOCK`.
+   - `syncStockFromDetails()`: Tự động đếm số lượng serial `IN_STOCK` thực tế để gán cho `stockQuantity` của sản phẩm tương ứng.
+2. **Quy chuẩn Chiết khấu & Cập nhật giá (`applyDiscount`):**
+   - Khi áp dụng chiết khấu hoặc cập nhật giá bán, hệ thống **chỉ cập nhật giá bán niêm yết `price` trong `products.txt`**.
+   - **Tuyệt đối không được ghi đè `importPrice` (giá vốn nhập hàng)** trong `product_details.txt`.
+3. **Quy chuẩn Bảo hành đa hình (`Product.getWarrantyMonths()`):**
+   - Khai báo phương thức trừu tượng `public abstract int getWarrantyMonths();` trong lớp cha `Product`.
+   - Lớp con `Phone` ghi đè: iOS trả về `12`, Android trả về `18`.
+   - Lớp con `Accessory` ghi đè: Phụ kiện trả về cố định `6` tháng bảo hành.
+   - Bất kỳ thành viên nào (đặc biệt là TV4) có đối tượng `Product p` đều có thể lấy số tháng bảo hành trực tiếp mà không cần ép kiểu.
+
+---
+
+## 4. Quy Ước Đặt Tên & Lập Trình OOP Chuẩn
 
 1. **Đặt tên chuẩn Java:**
    - **Tên Class & Interface:** Viết theo kiểu `PascalCase` (Ví dụ: `Product`, `Smartphone`, `ISalaryCalculable`).
    - **Tên Biến & Phương thức:** Viết theo kiểu `camelCase` (Ví dụ: `stockQuantity`, `calculateSalary()`, `checkLogin()`).
-   - **Hằng số & Enum:** Viết theo kiểu `UPPER_SNAKE_CASE` (Ví dụ: `ADMIN`, `WAREHOUSE`, `SALES`, `DEFAULT_VAT_RATE`).
+   - **Hằng số & Enum:** Viết theo kiểu `UPPER_SNAKE_CASE` (Ví dụ: `IN_STOCK`, `SOLD`, `WARRANTY`, `TIEP_NHAN`, `DANG_SUA`).
 2. **Đóng gói thuộc tính (Encapsulation):**
-   - Toàn bộ thuộc tính phải để `private` hoặc `protected` (đối với lớp cha để lớp con truy xuất).
-   - Cung cấp đầy đủ các phương thức `getter` và `setter` có kèm kiểm tra hợp lệ.
+   - Toàn bộ thuộc tính phải để `private` hoặc `protected`.
+   - Cung cấp đầy đủ các phương thức `getter` và `setter` có kèm kiểm tra hợp lệ ném ngoại lệ `ValidationException`.
 3. **Kế thừa & Đa hình (Inheritance & Polymorphism):**
    - Khi ghi đè phương thức từ lớp cha hoặc interface, bắt buộc sử dụng annotation `@Override`.
    - Constructor lớp con phải gọi `super(...)` truyền dữ liệu khởi tạo cho lớp cha trước khi gán thuộc tính riêng.
 
 ---
 
-## 3. Quy Chuẩn Xử Lý Nhập Liệu Console (Tránh Lỗi Trôi Lệnh)
+## 5. Quy Chuẩn Nhập Liệu Console (Chống Trôi Lệnh)
 
-1. **Tuyệt đối không dùng trực tiếp `scanner.nextInt()` hay `scanner.nextDouble()` rồi sau đó gọi `scanner.nextLine()`:**
-   - Lý do: Phím Enter để lại ký tự `\n` trong bộ đệm khiến lần nhập chuỗi tiếp theo bị trôi qua mất dữ liệu.
-2. **Quy chuẩn đọc mọi kiểu dữ liệu qua `scanner.nextLine()`:**
-   - Luôn đọc chuỗi bằng `scanner.nextLine().trim()`.
-   - Chuyển đổi số trong khối `try-catch` bắt lỗi `NumberFormatException`:
-
-```java
-public class InputHelper {
-    private static final Scanner scanner = new Scanner(System.in);
-
-    public static String readString(String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String input = scanner.nextLine().trim();
-            if (!input.isEmpty()) return input;
-            System.out.println("(!) Dữ liệu không được để trống. Vui lòng nhập lại!");
-        }
-    }
-
-    public static int readInt(String prompt, int min, int max) {
-        while (true) {
-            System.out.print(prompt);
-            try {
-                int value = Integer.parseInt(scanner.nextLine().trim());
-                if (value >= min && value <= max) return value;
-                System.out.printf("(!) Vui lòng nhập số trong khoảng [%d - %d].%n", min, max);
-            } catch (NumberFormatException e) {
-                System.out.println("(!) Lỗi: Phải nhập số nguyên hợp lệ!");
-            }
-        }
-    }
-
-    public static double readDouble(String prompt, double min) {
-        while (true) {
-            System.out.print(prompt);
-            try {
-                double value = Double.parseDouble(scanner.nextLine().trim());
-                if (value >= min) return value;
-                System.out.printf("(!) Giá trị phải >= %.0f.%n", min);
-            } catch (NumberFormatException e) {
-                System.out.println("(!) Lỗi: Phải nhập số thực hợp lệ!");
-            }
-        }
-    }
-}
-```
-
----
-
-## 4. Quy Chuẩn Đọc / Ghi File Dữ Liệu (.txt UTF-8)
-
-1. **Định dạng dữ liệu:**
-   - Dùng dấu gạch đứng `|` làm ký tự phân tách trường.
-   - Khi parse dữ liệu, sử dụng `line.split("\\|", -1)` để tránh bị mất cột rỗng ở cuối dòng.
-2. **Sử dụng `try-with-resources` để tự động đóng file:**
-   - Luôn chỉ định rõ mã hóa `StandardCharsets.UTF_8` để không bị lỗi font tiếng Việt trên Windows.
-
-```java
-// Đọc file an toàn
-public static List<String> readLines(String filePath) {
-    List<String> lines = new ArrayList<>();
-    Path path = Paths.get(filePath);
-    if (!Files.exists(path)) return lines;
-
-    try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-        String line;
-        while ((line = br.readLine()) != null) {
-            line = line.trim();
-            if (!line.isEmpty()) {
-                lines.add(line);
-            }
-        }
-    } catch (IOException e) {
-        System.err.println("Lỗi đọc file: " + filePath + " - " + e.getMessage());
-    }
-    return lines;
-}
-
-// Ghi file an toàn
-public static boolean writeLines(String filePath, List<String> lines) {
-    Path path = Paths.get(filePath);
-    try {
-        if (path.getParent() != null && !Files.exists(path.getParent())) {
-            Files.createDirectories(path.getParent());
-        }
-        try (BufferedWriter bw = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            for (String line : lines) {
-                bw.write(line);
-                bw.newLine();
-            }
-            return true;
-        }
-    } catch (IOException e) {
-        System.err.println("Lỗi ghi file: " + filePath + " - " + e.getMessage());
-        return false;
-    }
-}
-```
-
----
-
-## 5. Quy Chuẩn Phân Quyền & Kiểm Soát 4 Role
-
-1. **Enum `Role` phân định 4 vai trò rõ ràng:**
-   ```java
-   public enum Role {
-       ADMIN("Quản trị viên"),
-       WAREHOUSE("Nhân viên kho"),
-       SALES("Nhân viên bán hàng"),
-       CUSTOMER("Khách hàng / User");
-
-       private final String displayName;
-       Role(String displayName) { this.displayName = displayName; }
-       public String getDisplayName() { return displayName; }
-   }
-   ```
-2. **Kiểm tra quyền trước khi thực thi nghiệp vụ nhạy cảm:**
-   - Quản trị viên (`ADMIN`): Có quyền thực thi tất cả các chức năng quản trị, nhân sự, tài khoản, doanh thu.
-   - Nhân viên kho (`WAREHOUSE`): Thao tác trên `ProductManager`, cập nhật tồn kho, xử lý `WarrantyClaim`.
-   - Nhân viên bán hàng (`SALES`): Tạo `Invoice`, lập đơn, thanh toán, quản lý và chăm sóc `Customer`.
-   - Khách hàng (`CUSTOMER` / `USER`): Tra cứu sản phẩm, tự đặt mua hàng, thanh toán, xem điểm tích lũy, gửi đánh giá review và yêu cầu bảo hành.
+1. **Tuyệt đối không gọi `scanner.nextInt()` hay `scanner.nextDouble()` rồi sau đó gọi `scanner.nextLine()`:**
+   - Phím Enter để lại ký tự `\n` trong bộ đệm khiến lần nhập chuỗi tiếp theo bị trôi qua mất dữ liệu.
+2. **Luôn sử dụng `scanner.nextLine().trim()`:**
+   - Chuyển đổi kiểu dữ liệu thông qua `Integer.parseInt()` hoặc `Double.parseDouble()` trong khối `try-catch` kiểm tra lỗi số.
 
 ---
 
 ## 6. Tiêu Chuẩn Phương Thức Riêng & Thuộc Tính Riêng (Ba-rem Chấm Điểm)
 
 1. **Mỗi Class bắt buộc có ít nhất 1 phương thức riêng biệt** phục vụ nghiệp vụ của nó:
-   - Không được chỉ có getter/setter đơn thuần.
-   - Phương thức riêng phải có công thức tính toán hoặc logic điều kiện rõ ràng (ví dụ: `calculateSalary()`, `isLowStock()`, `calculateChange()`, `isEligibleForUpgrade()`).
-2. **Khi in thông tin (`toString()` hoặc `display()`):**
-   - Phải in rõ ràng cả các thuộc tính chung và thuộc tính riêng biệt của class đó ra màn hình console theo định dạng bảng hoặc dòng có căn lề đẹp mắt (`System.out.printf`).
+   - Phương thức riêng phải có công thức tính toán hoặc logic điều kiện rõ ràng (ví dụ: `calculateSalary()`, `isLowStock()`, `calculateChange()`, `isCompatibleWith()`, `isEligibleForUpgrade()`).
+2. **Khi in thông tin (`displayInfo()` hoặc `displayRow()`):**
+   - Sử dụng `System.out.printf` định dạng cột thẳng hàng, căn lề đẹp mắt, hiển thị đầy đủ thông tin nhận diện sản phẩm, ngày tháng và trạng thái.
