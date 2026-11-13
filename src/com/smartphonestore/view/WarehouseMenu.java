@@ -135,8 +135,8 @@ public class WarehouseMenu {
                     String supplier = sc.nextLine().trim();
                     if (supplier.isEmpty()) supplier = "FPT_Synnex";
 
-                    String today = java.time.LocalDate.now().toString();
-                    System.out.print("Nhap ngay nhap kho [YYYY-MM-DD] (Enter mac dinh hom nay: " + today + "): ");
+                    String today = java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                    System.out.print("Nhap ngay nhap kho [dd/MM/yyyy] (Enter mac dinh hom nay: " + today + "): ");
                     String importDate = sc.nextLine().trim();
                     if (importDate.isEmpty()) importDate = today;
 
