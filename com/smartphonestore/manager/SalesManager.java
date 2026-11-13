@@ -196,7 +196,7 @@ public class SalesManager {
     }
 
     public double revenueToday() {
-        LocalDate today = DateUtil.today();
+        LocalDate today = DateUtil.now();
         double total = 0;
         for (Invoice invoice : invoices) {
             if ("PAID".equals(invoice.getStatus())) {
