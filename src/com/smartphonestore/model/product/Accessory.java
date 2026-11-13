@@ -57,11 +57,6 @@ public class Accessory extends Product implements IDiscountable {
     }
 
     @Override
-    public int getWarrantyMonths() {
-        return 6; // Phụ kiện bảo hành 6 tháng
-    }
-
-    @Override
     public double calculateDiscountedPrice(double discountRate) {
         if (discountRate < 0.0 || discountRate > 0.5) {
             System.out.println("[!] Phu kien chi duoc phep giam gia toi da 50% (0.0 -> 0.5)!");

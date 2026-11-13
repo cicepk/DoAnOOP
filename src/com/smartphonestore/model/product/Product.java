@@ -48,9 +48,6 @@ public abstract class Product {
     // Hàm in thông tin sản phẩm đẹp mắt ra màn hình
     public abstract void displayInfo();
 
-    // Hàm tính thời gian bảo hành (tháng)
-    public abstract int getWarrantyMonths();
-
     public String getId() {
         return id;
     }
