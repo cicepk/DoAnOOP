@@ -9,6 +9,7 @@ public abstract class Phone extends Product {
     }
 
     // Hàm tính thời gian bảo hành
+    @Override
     public int getWarrantyMonths() {
         if ("IOS".equalsIgnoreCase(operatingSystem) || "Apple".equalsIgnoreCase(getBrand())) {
             return 12;

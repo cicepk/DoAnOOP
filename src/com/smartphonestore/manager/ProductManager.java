@@ -17,10 +17,16 @@ public class ProductManager {
     // Đường dẫn tới file product_details.txt
     private final String detailsFilePath = "data/product_details.txt";
 
-    // Hàm khởi tạo: nạp dữ liệu từ cả 2 file
+    // Hằng số trạng thái Serial/IMEI dùng chung cho toàn hệ thống
+    public static final String IN_STOCK = "IN_STOCK";
+    public static final String SOLD = "SOLD";
+    public static final String WARRANTY = "WARRANTY";
+
+    // Hàm khởi tạo: nạp dữ liệu từ cả 2 file và tự động đồng bộ tồn kho
     public ProductManager() {
         loadFromFile();
         loadDetailsFromFile();
+        syncStockFromDetails();
     }
 
     // ==================== QUẢN LÝ DANH MỤC SẢN PHẨM ====================
@@ -82,25 +88,22 @@ public class ProductManager {
         Product p = findByID(id);
         if (p != null) {
             boolean nameChanged = false;
-            boolean priceChanged = false;                           //Tên mới khác tên cũ
             if (newName != null && !newName.trim().isEmpty() && !newName.trim().equals(p.getName())) {
                 p.setName(newName.trim());
                 nameChanged = true;
             }
             if (newPrice > 0 && newPrice != p.getPrice()) {
                 p.setPrice(newPrice);
-                priceChanged = true;
             }
             if (newThreshold >= 0) {
                 p.setMinStockThreshold(newThreshold);
             }
 
-            // Đồng bộ tên và giá mới sang toàn bộ chi tiết con máy trong product_details.txt
-            if (nameChanged || priceChanged) {
+            // Đồng bộ tên mới sang toàn bộ chi tiết con máy trong product_details.txt (KHÔNG sửa importPrice)
+            if (nameChanged) {
                 for (ProductDetail d : productDetails) {
                     if (d.getProductId().equalsIgnoreCase(p.getId())) {
-                        if (nameChanged) d.setProductName(p.getName());//nếu True thì gán tên mới
-                        if (priceChanged) d.setImportPrice(newPrice);// giá mới 
+                        d.setProductName(p.getName());
                     }
                 }
                 saveDetailsToFile();
@@ -130,8 +133,72 @@ public class ProductManager {
         return false;
     }
 
-    // Nhập hàng tăng số lượng tồn kho (đơn giản)
-    public boolean StockIn(String id, int quantity) {
+    // ==================== CÁC HÀM XỬ LÝ SERIAL CHO TOÀN BỘ NHÓM ====================
+
+    // Đếm số lượng serial đang thực tế IN_STOCK
+    public int countInStock(String productId) {
+        int n = 0;
+        for (ProductDetail d : productDetails) {
+            if (d.getProductId().equalsIgnoreCase(productId) && IN_STOCK.equals(d.getStatus())) n++;
+        }
+        return n;
+    }
+
+    // Lúc nạp file: nếu stockQuantity lệch với số serial IN_STOCK thì lấy theo serial
+    public void syncStockFromDetails() {
+        boolean changed = false;
+        for (Product p : products) {
+            int real = countInStock(p.getId());
+            if (p.getStockQuantity() != real) {
+                p.setStockQuantity(real);
+                changed = true;
+            }
+        }
+        if (changed) saveToFile();
+    }
+
+    // Trả về null nếu bán được, ngược lại trả về câu báo lỗi
+    public String checkSellable(String serial) {
+        ProductDetail d = findDetailBySerial(serial);
+        if (d == null) return "Khong co serial " + serial + " trong kho";
+        if (!IN_STOCK.equals(d.getStatus())) return "Serial " + serial + " dang o trang thai " + d.getStatus();
+        if (findByID(d.getProductId()) == null) return "San pham " + d.getProductId() + " khong con trong danh muc";
+        return null;
+    }
+
+    // TV3 gọi khi lập hóa đơn: IN_STOCK -> SOLD, tồn kho -1, lưu cả 2 file
+    public boolean sellSerial(String serial) {
+        if (checkSellable(serial) != null) return false;
+        ProductDetail d = findDetailBySerial(serial);
+        Product p = findByID(d.getProductId());
+        if (!p.decreaseStock(1)) return false;
+        d.setStatus(SOLD);
+        return saveToFile() && saveDetailsToFile();
+    }
+
+    // TV3 gọi khi hủy hóa đơn: SOLD -> IN_STOCK, tồn kho +1
+    public boolean returnSerial(String serial) {
+        ProductDetail d = findDetailBySerial(serial);
+        if (d == null || !SOLD.equals(d.getStatus())) return false;
+        Product p = findByID(d.getProductId());
+        if (p == null) return false;
+        d.setStatus(IN_STOCK);
+        p.increaseStock(1);
+        return saveToFile() && saveDetailsToFile();
+    }
+
+    // TV4 gọi: SOLD <-> WARRANTY (không đụng tồn kho vì máy là của khách)
+    public boolean setWarrantyStatus(String serial, boolean inWarranty) {
+        ProductDetail d = findDetailBySerial(serial);
+        if (d == null) return false;
+        String from = inWarranty ? SOLD : WARRANTY;
+        if (!from.equals(d.getStatus())) return false;
+        d.setStatus(inWarranty ? WARRANTY : SOLD);
+        return saveDetailsToFile();
+    }
+
+    // Nội bộ: Nhập hàng tăng số lượng tồn kho (chỉ dùng nội bộ trong manager/menu)
+    private boolean StockIn(String id, int quantity) {
         Product p = findByID(id);
         if (p != null && quantity > 0) {
             p.increaseStock(quantity);
@@ -140,7 +207,7 @@ public class ProductManager {
         return false;
     }
 
-    // Xuất hàng / Bán hàng (TV3 gọi)
+    // Nội bộ: Giảm tồn kho (chỉ dùng nội bộ khi sellSerial)
     public boolean decreaseStock(String id, int quantity) {
         Product p = findByID(id);
         if (p != null && quantity > 0) {
@@ -153,26 +220,16 @@ public class ProductManager {
         return false;
     }
 
-    // Áp dụng giảm giá và cập nhật giá mới vào cả 2 file: products.txt và product_details.txt
+    // Áp dụng giảm giá và cập nhật giá bán mới vào file products.txt (KHÔNG đụng importPrice)
     public double applyDiscount(String id, Double discountRate) {
         Product p = findByID(id);
-        if (p instanceof IDiscountable) {
-            IDiscountable item = (IDiscountable) p;
-            double discountedPrice = item.calculateDiscountedPrice(discountRate);
-            if (discountedPrice > 0 && discountedPrice != p.getPrice()) {
-                p.setPrice(discountedPrice);
-                // Đồng bộ giá mới vào toàn bộ con máy thuộc mã sản phẩm này trong product_details.txt
-                for (ProductDetail d : productDetails) {
-                    if (d.getProductId().equalsIgnoreCase(p.getId())) {
-                        d.setImportPrice(discountedPrice);
-                    }
-                }
-                saveToFile();
-                saveDetailsToFile();
-            }
-            return discountedPrice;
+        if (!(p instanceof IDiscountable)) return -1;
+        double newPrice = ((IDiscountable) p).calculateDiscountedPrice(discountRate);
+        if (newPrice > 0 && newPrice != p.getPrice()) {
+            p.setPrice(newPrice);   // chỉ đổi giá bán
+            saveToFile();           // KHÔNG đụng importPrice trong product_details
         }
-        return -1;
+        return newPrice;
     }
 
     // Tự động sinh mã sản phẩm tiếp theo (PRD10, PRD11...)

@@ -9,9 +9,13 @@ public class WarehouseMenu {
     private final ProductManager prd;
     private final Scanner sc;
 
-    public WarehouseMenu() {
-        this.prd = new ProductManager(); // ProductManager constructor đã nạp cả products.txt và product_details.txt
+    public WarehouseMenu(ProductManager prd) {
+        this.prd = prd;
         this.sc = new Scanner(System.in);
+    }
+
+    public WarehouseMenu() {
+        this(new ProductManager());
     }
 
     public void displayMenu() {
