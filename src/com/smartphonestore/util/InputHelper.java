@@ -1,71 +1,63 @@
 package com.smartphonestore.util;
-
-import java.util.Scanner;
+import java.util.Scanner; 
 
 public class InputHelper {
     private static final Scanner scanner = new Scanner(System.in);
 
-    // Đọc chuỗi bắt buộc (không được để trống)
     public static String readString(String text) {
         while (true) {
             System.out.print(text);
             String input = scanner.nextLine().trim();
             if (!input.isEmpty()) return input;
-            System.out.println("(!) Du lieu khong duoc de trong. Vui long nhap lai!");
+            System.out.println("(!) Dữ liệu không được để trống. Vui lòng nhập lại!");
         }
     }
-
-    // Đọc chuỗi tùy chọn (cho phép Enter để lấy giá trị mặc định)
-    public static String readOptionalString(String text) {
-        System.out.print(text);
-        return scanner.nextLine().trim();
-    }
-
-    // Đọc số nguyên trong khoảng [min, max]
     public static int readInt(String text, int min, int max) {
-        while (true) {
+        while(true) {
             System.out.print(text);
             try {
                 int value = Integer.parseInt(scanner.nextLine().trim());
                 if (value >= min && value <= max) return value;
-                System.out.printf("(!) Vui long nhap so trong khoang [%d - %d].%n", min, max);
+                System.out.printf("(!) Vui lòng nhập số trong khoảng [%d - %d].%n", min, max);
             } catch (NumberFormatException e) {
-                System.out.println("(!) Loi: Phai nhap so nguyen hop le!");
+                System.out.println("(!) Lỗi: Phải nhập số nguyên hợp lệ!");
             }
         }
     }
-
-    // Đọc số thực >= min
     public static double readDouble(String text, double min) {
         while (true) {
             System.out.print(text);
             try {
                 double value = Double.parseDouble(scanner.nextLine().trim());
                 if (value >= min) return value;
-                System.out.printf("(!) Gia tri phai >= %,.0f.%n", min);
+                System.out.printf("(!) Giá trị phải >= %.0f.%n", min);
             } catch (NumberFormatException e) {
-                System.out.println("(!) Loi: Phai nhap so thuc hop le!");
+                System.out.println("(!) Lỗi: Phải nhập số thực hợp lệ!");
             }
         }
     }
-
-    // Đọc số thực trong khoảng [min, max]
+    // Số thực trong khoảng [min, max] (VD: tỷ lệ hoa hồng 0 - 1)
     public static double readDouble(String text, double min, double max) {
         while (true) {
             double value = readDouble(text, min);
             if (value <= max) return value;
-            System.out.println("(!) Gia tri phai <= " + max + ".");
+            System.out.println("(!) Giá trị phải <= " + max + ".");
         }
     }
-
-    // Hỏi Yes/No (Y/N)
+    // Hỏi Y/N, nhập sai thì hỏi lại
     public static boolean readYesNo(String text) {
         while (true) {
             System.out.print(text);
             String input = scanner.nextLine().trim();
             if (input.equalsIgnoreCase("Y")) return true;
             if (input.equalsIgnoreCase("N")) return false;
-            System.out.println("(!) Vui long nhap Y hoac N!");
+            System.out.println("(!) Vui lòng nhập Y hoặc N!");
         }
+    }
+
+    // Đọc chuỗi tùy chọn (cho phép nhấn Enter để bỏ qua / nhận giá trị mặc định)
+    public static String readOptionalString(String text) {
+        System.out.print(text);
+        return scanner.nextLine().trim();
     }
 }

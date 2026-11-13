@@ -115,16 +115,19 @@ public class WarehouseMenu {
                     System.out.println("\n==============================================================");
                     System.out.println("       LAP PHIEU NHAP HANG VAO KHO (GOODS RECEIPT NOTE)       ");
                     System.out.println("==============================================================");
-                    String supplier = InputHelper.readOptionalString("Nhap ten Nha cung cap (Enter mac dinh: FPT_Synnex): ");
-                    if (supplier.isEmpty()) supplier = "FPT_Synnex";
+                    String supplier = "FPT_Synnex";
+                    if (!InputHelper.readYesNo("Su dung Nha cung cap mac dinh 'FPT_Synnex'? (Y/N): ")) {
+                        supplier = InputHelper.readString("Nhap ten Nha cung cap: ");
+                    }
 
                     String now = DateUtil.nowText();
-                    String importDate = InputHelper.readOptionalString("Nhap ngay gio nhap kho [dd/MM/yyyy HH:mm:ss] (Enter mac dinh: " + now + "): ");
-                    if (importDate.isEmpty()) {
-                        importDate = now;
-                    } else if (importDate.matches("^\\d{2}/\\d{2}/\\d{4}$")) {
-                        String timePart = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
-                        importDate = importDate + " " + timePart;
+                    String importDate = now;
+                    if (!InputHelper.readYesNo("Su dung thoi gian nhap kho hien tai (" + now + ")? (Y/N): ")) {
+                        importDate = InputHelper.readString("Nhap ngay gio nhap kho [dd/MM/yyyy HH:mm:ss]: ");
+                        if (importDate.matches("^\\d{2}/\\d{2}/\\d{4}$")) {
+                            String timePart = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+                            importDate = importDate + " " + timePart;
+                        }
                     }
 
                     int sessionItemCount = 0;
@@ -154,24 +157,21 @@ public class WarehouseMenu {
 
                             // Nhập số IMEI/Seri cho từng máy trong lô
                             List<ProductDetail> batchDetails = new ArrayList<>();
-                            System.out.printf(">> Nhap so Seri/IMEI cho %d con may moi:%n", qty);
+                            boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
-                                while (true) {
-                                    String prompt = String.format(" - Seri/IMEI may [%d/%d] (Enter de tu dong sinh): ", i, qty);
-                                    String inputSn = InputHelper.readOptionalString(prompt);
-                                    if (inputSn.isEmpty()) {
-                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", i);
-                                        System.out.println("   -> Tu dong cap IMEI: " + serial);
-                                    } else {
-                                        serial = inputSn.toUpperCase();
+                                if (autoSn) {
+                                    serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", i);
+                                    System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
+                                } else {
+                                    while (true) {
+                                        serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
+                                        if (prd.isSerialExists(serial)) {
+                                            System.out.println("   [X] So Seri/IMEI nay da ton tai trong kho! Vui long nhap lai.");
+                                            continue;
+                                        }
+                                        break;
                                     }
-
-                                    if (prd.isSerialExists(serial)) {
-                                        System.out.println("   [X] So Seri/IMEI nay da ton tai trong kho! Vui long nhap lai.");
-                                        continue;
-                                    }
-                                    break;
                                 }
                                 batchDetails.add(new ProductDetail(p.getId(), p.getName(), serial, importDate, importPrice, supplier, "IN_STOCK"));
                             }
@@ -245,24 +245,21 @@ public class WarehouseMenu {
 
                             // Nhập danh sách IMEI/Seri cho sản phẩm mới
                             List<ProductDetail> batchDetails = new ArrayList<>();
-                            System.out.printf(">> Nhap so Seri/IMEI cho %d con may moi:%n", qty);
+                            boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
-                                while (true) {
-                                    String prompt = String.format(" - Seri/IMEI may [%d/%d] (Enter de tu dong sinh): ", i, qty);
-                                    String inputSn = InputHelper.readOptionalString(prompt);
-                                    if (inputSn.isEmpty()) {
-                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", i);
-                                        System.out.println("   -> Tu dong cap IMEI: " + serial);
-                                    } else {
-                                        serial = inputSn.toUpperCase();
+                                if (autoSn) {
+                                    serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", i);
+                                    System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
+                                } else {
+                                    while (true) {
+                                        serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
+                                        if (prd.isSerialExists(serial)) {
+                                            System.out.println("   [X] So Seri/IMEI nay da ton tai trong kho! Vui long nhap lai.");
+                                            continue;
+                                        }
+                                        break;
                                     }
-
-                                    if (prd.isSerialExists(serial)) {
-                                        System.out.println("   [X] So Seri/IMEI nay da ton tai trong kho! Vui long nhap lai.");
-                                        continue;
-                                    }
-                                    break;
                                 }
                                 batchDetails.add(new ProductDetail(id, name, serial, importDate, importPrice, supplier, "IN_STOCK"));
                             }
@@ -308,8 +305,10 @@ public class WarehouseMenu {
                     } else {
                         System.out.println("Thong tin hien tai:");
                         p.displayInfo();
-                        String newName = InputHelper.readOptionalString("Nhap ten moi (bam Enter de giu nguyen): ");
-                        if (newName.isEmpty()) newName = p.getName();
+                        String newName = p.getName();
+                        if (InputHelper.readYesNo("Ban co muon doi ten san pham khong? (Y/N): ")) {
+                            newName = InputHelper.readString("Nhap ten moi: ");
+                        }
 
                         double inputPrice = InputHelper.readDouble("Nhap gia moi (nhap 0 neu giu nguyen): ", 0);
                         double newPrice = (inputPrice == 0) ? p.getPrice() : inputPrice;
