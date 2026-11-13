@@ -1,0 +1,7 @@
+# Format: id|username|password|role|status|lastLoginTime
+ACC01|admin|admin123|ADMIN|ACTIVE|19/10/2026 08:30:00
+ACC02|kho01|kho123|WAREHOUSE|ACTIVE|19/10/2026 09:15:22
+ACC03|banhang01|sales123|SALES|ACTIVE|19/10/2026 09:45:10
+ACC04|banhang02|sales456|SALES|ACTIVE|Chưa đăng nhập
+ACC05|khach01|khach123|CUSTOMER|ACTIVE|19/10/2026 10:20:00
+ACC06|khach02|khach456|CUSTOMER|ACTIVE|Chưa đăng nhập
