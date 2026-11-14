@@ -1,8 +1,10 @@
 package com.smartphonestore.view;
 
 import com.smartphonestore.manager.AccountManager;
+import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.EmployeeManager;
 import com.smartphonestore.manager.ProductManager;
+import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.model.auth.Account;
 import com.smartphonestore.model.auth.Employee;
 import com.smartphonestore.model.enums.Role;
@@ -12,11 +14,16 @@ public class LoginView {
     private final AccountManager accountManager;
     private final EmployeeManager employeeManager;
     private final ProductManager productManager;
+    private final SalesManager salesManager;
+    private final CustomerManager customerManager;
 
-    public LoginView(AccountManager accountManager, EmployeeManager employeeManager, ProductManager productManager) {
+    public LoginView(AccountManager accountManager, EmployeeManager employeeManager, ProductManager productManager,
+                     SalesManager salesManager, CustomerManager customerManager) {
         this.accountManager = accountManager;
         this.employeeManager = employeeManager;
         this.productManager = productManager;
+        this.salesManager = salesManager;
+        this.customerManager = customerManager;
     }
 
     public void start() {
@@ -88,7 +95,9 @@ public class LoginView {
         System.out.println("(Bạn cần có mã khách hàng do cửa hàng cấp, ví dụ CUS01)");
         String customerId = InputHelper.readString("=> Mã khách hàng: ").toUpperCase();
 
-        if (!accountManager.customerExists(customerId)) {
+        // Hỏi CustomerManager (TV4) đang giữ danh sách khách trong bộ nhớ,
+        // nên khách vừa được tạo trong lần chạy này cũng đăng ký được
+        if (customerManager.findById(customerId) == null) {
             System.out.println("[X] Không tìm thấy hồ sơ khách hàng " + customerId
                 + ". Vui lòng liên hệ quầy để được tạo hồ sơ.");
             return;
@@ -116,20 +125,25 @@ public class LoginView {
     private void routeByRole(Account acc) {
         switch (acc.getRole()) {
             case ADMIN:
-                new AdminMenu(accountManager, employeeManager, acc).displayMenu();
+                new AdminMenu(accountManager, employeeManager, productManager,
+                              salesManager, customerManager, acc).displayMenu();
                 break;
             case WAREHOUSE:
                 new WarehouseMenu(productManager).displayMenu(); // TV2 - dùng chung ProductManager tạo ở Main
                 break;
             case SALES:
-                // TV3: thay bằng new SalesMenu(...).displayMenu() khi TV3 làm xong
-                System.out.println("[!] Menu Bán hàng (TV3) đang được phát triển.");
+                // TV3 - linkedId của tài khoản bán hàng là mã EMPxx, dùng làm mã nhân viên lập hóa đơn
+                new SalesMenu(salesManager, customerManager, employeeManager, acc.getLinkedId()).show();
                 break;
-            case CUSTOMER:
-                // TV4: thay bằng menu khách tự xem, truyền acc.getLinkedId() (mã CUSxx)
-                System.out.println("[!] Menu Khách hàng (TV4) đang được phát triển. Mã khách: "
-                    + acc.getLinkedId());
+            case CUSTOMER: {
+                // TV4 - linkedId là mã CUSxx, khách chỉ xem được dữ liệu của chính mình
+                boolean logout = new CustomerMenu(customerManager, acc.getLinkedId(), productManager).show();
+                if (!logout) {   // show() trả false khi khách chọn [0] Thoát chương trình
+                    System.out.println("\n[✓] Tạm biệt!");
+                    System.exit(0);
+                }
                 break;
+            }
         }
         System.out.println("[✓] Đã đăng xuất.");
     }

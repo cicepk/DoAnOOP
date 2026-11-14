@@ -8,7 +8,6 @@ import java.util.List;
 
 public class AccountManager {
     private static final String FILE_PATH = "data/accounts.txt";
-    private static final String CUSTOMER_FILE_PATH = "data/customers.txt";
 
     private final List<Account> accounts = new ArrayList<>();
 
@@ -86,17 +85,6 @@ public class AccountManager {
         }
         return null;
     }
-    // Kiểm tra tài khoản khách tồn tại chưa
-    public boolean customerExists(String customerId) {
-        if (customerId == null) return false;
-        for (String line : FileIO.readLines(CUSTOMER_FILE_PATH)) {
-            // Lấy phần tử id trong format
-            String id = line.split("\\|", -1)[0].trim();
-            if (id.equalsIgnoreCase(customerId.trim())) return true;
-        }
-        return false;
-    }
-
     // ===================== ĐĂNG NHẬP =====================
 
     // Đúng user + pass + ACTIVE thì cập nhật giờ đăng nhập và trả về tài khoản, sai trả về null

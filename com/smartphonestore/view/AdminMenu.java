@@ -1,7 +1,10 @@
 package com.smartphonestore.view;
 
 import com.smartphonestore.manager.AccountManager;
+import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.EmployeeManager;
+import com.smartphonestore.manager.ProductManager;
+import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.model.auth.Account;
 import com.smartphonestore.model.auth.AdminStaff;
 import com.smartphonestore.model.auth.Employee;
@@ -15,11 +18,18 @@ import java.util.List;
 public class AdminMenu {
     private final AccountManager accountManager;
     private final EmployeeManager employeeManager;
+    private final ProductManager productManager;   // 3 manager này chỉ để chuyển tiếp
+    private final SalesManager salesManager;       // cho menu Quản lý khách hàng (TV4)
+    private final CustomerManager customerManager;
     private final Account currentAccount; // admin đang đăng nhập
 
-    public AdminMenu(AccountManager accountManager, EmployeeManager employeeManager, Account currentAccount) {
+    public AdminMenu(AccountManager accountManager, EmployeeManager employeeManager, ProductManager productManager,
+                     SalesManager salesManager, CustomerManager customerManager, Account currentAccount) {
         this.accountManager = accountManager;
         this.employeeManager = employeeManager;
+        this.productManager = productManager;
+        this.salesManager = salesManager;
+        this.customerManager = customerManager;
         this.currentAccount = currentAccount;
     }
 
@@ -324,9 +334,11 @@ public class AdminMenu {
 
     // ===================== [10] KHÁCH HÀNG (TV4) =====================
 
+    // Mở menu Quản lý khách hàng của TV4 với quyền ADMIN (được xóa phiếu bảo hành).
+    // Chọn [0] trong menu đó sẽ quay lại Menu Admin.
     private void openCustomerMenu() {
-        // Khi TV4 làm xong: new CustomerMenu(customerManager, Role.ADMIN).displayMenu();
-        System.out.println("             MENU DÀNH CHO KHÁCH                ");
+        new CustomerManagementMenu(customerManager, accountManager, salesManager,
+                                   productManager, Role.ADMIN).show();
     }
 
     // ===================== HÀM NHẬP LIỆU DÙNG CHUNG =====================
