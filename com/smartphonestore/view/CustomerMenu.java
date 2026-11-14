@@ -2,10 +2,18 @@ package com.smartphonestore.view;
 
 import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.ProductManager;
+import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.model.product.Product;
+import com.smartphonestore.model.product.ProductDetail;
+import com.smartphonestore.model.sale.Invoice;
+import com.smartphonestore.model.sale.InvoiceDetail;
 import com.smartphonestore.model.customer.*;
 import com.smartphonestore.util.InputHelper;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Menu "KHÁCH HÀNG" cho người đăng nhập bằng tài khoản role CUSTOMER (TV4).
@@ -16,11 +24,13 @@ public class CustomerMenu {
     private final CustomerManager manager;
     private final String customerId;
     private final ProductManager productManager;
+    private final SalesManager salesManager;
 
-    public CustomerMenu(CustomerManager manager, String customerId, ProductManager productManager) {
+    public CustomerMenu(CustomerManager manager, String customerId, ProductManager productManager, SalesManager salesManager) {
         this.manager = manager;
         this.customerId = customerId;
         this.productManager = productManager;
+        this.salesManager = salesManager;
     }
 
     /**
@@ -73,12 +83,47 @@ public class CustomerMenu {
         me.display();
     }
 
-    private void updateContact() {
-        String phone = InputHelper.readString("SĐT mới (10 hoặc 11 số, bắt đầu bằng 0): ");
-        String email = InputHelper.readString("Email mới: ");
-        manager.updateContact(customerId, phone, email);
-        System.out.println("Đã cập nhật thông tin.");
+    /** Các sản phẩm khách này đã mua và đã thanh toán, mỗi sản phẩm chỉ xuất hiện một lần. */
+    private List<Product> getPurchasedProducts() {
+        List<Product> result = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (Invoice inv : salesManager.getAllInvoices()) {
+            if (!"PAID".equals(inv.getStatus()) || !customerId.equalsIgnoreCase(inv.getCustomerId())) continue;
+            for (InvoiceDetail d : salesManager.getDetailsByInvoice(inv.getId())) {
+                ProductDetail pd = productManager.findDetailBySerial(d.getSerialNumber());
+                if (pd == null) continue;
+                if (!seen.add(pd.getProductId())) continue;
+                Product p = productManager.findByID(pd.getProductId());
+                if (p != null) result.add(p);
+            }
+        }
+        return result;
     }
+
+   private void updateContact() {
+    Customer me = manager.findById(customerId);
+    if (me == null) throw new IllegalArgumentException("Không tìm thấy hồ sơ của bạn");
+
+    System.out.println("SĐT hiện tại  : " + me.getPhoneNumber());
+    System.out.println("Email hiện tại: " + me.getEmail());
+    System.out.println("[1] Sửa cả SĐT và email");
+    System.out.println("[2] Chỉ sửa SĐT");
+    System.out.println("[3] Chỉ sửa email");
+    System.out.println("[0] Hủy");
+    int choice = InputHelper.readInt("Chọn: ", 0, 3);
+    if (choice == 0) return;
+
+    String phone = me.getPhoneNumber();   // giữ nguyên nếu không sửa
+    String email = me.getEmail();
+    if (choice == 1 || choice == 2) {
+        phone = InputHelper.readString("SĐT mới (10 hoặc 11 số, bắt đầu bằng 0): ");
+    }
+    if (choice == 1 || choice == 3) {
+        email = InputHelper.readString("Email mới: ");
+    }
+    manager.updateContact(customerId, phone, email);
+    System.out.println("Đã cập nhật thông tin.");
+}
 
     private void checkRank(Customer me) {
         System.out.printf("Tổng chi tiêu tích lũy: %,.0f đ%n", me.getTotalSpent());
@@ -98,16 +143,25 @@ public class CustomerMenu {
     }
 
     private void addReview() {
-        String pid = InputHelper.readString("Mã sản phẩm: ");
-        Product product = productManager.findByID(pid);
-        if (product == null) {
-            throw new IllegalArgumentException("Không có sản phẩm mã " + pid);
-        }
-        int stars = InputHelper.readInt("Số sao (1-5): ", 1, 5);
-        String comment = InputHelper.readString("Nhận xét: ");
-        CustomerReview r = manager.addReview(customerId, product.getId(), stars, comment);
-        System.out.println("Cảm ơn bạn! Đã ghi nhận đánh giá " + r.getReviewId());
+    List<Product> bought = getPurchasedProducts();
+    if (bought.isEmpty()) {
+        System.out.println("Bạn chưa có sản phẩm nào đã mua và thanh toán nên chưa thể đánh giá.");
+        return;
     }
+    System.out.println("--- Sản phẩm bạn đã mua ---");
+    for (int i = 0; i < bought.size(); i++) {
+        System.out.printf("[%d] %s%n", i + 1, bought.get(i).getName());
+    }
+    int pick = InputHelper.readInt("Chọn sản phẩm cần đánh giá (0 = hủy): ", 0, bought.size());
+    if (pick == 0) return;
+    Product product = bought.get(pick - 1);
+
+    int stars = InputHelper.readInt("Số sao (1-5): ", 1, 5);
+    String comment = InputHelper.readString("Nhận xét: ");
+    CustomerReview r = manager.addReview(customerId, product.getId(), stars, comment);
+    System.out.println("Cảm ơn bạn! Đã ghi nhận đánh giá " + r.getReviewId());
+    }
+
     private void myReviews() {
         List<CustomerReview> list = manager.getReviewsByCustomer(customerId);
         if (list.isEmpty()) {

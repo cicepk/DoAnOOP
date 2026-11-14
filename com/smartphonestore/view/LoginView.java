@@ -137,7 +137,7 @@ public class LoginView {
                 break;
             case CUSTOMER: {
                 // TV4 - linkedId là mã CUSxx, khách chỉ xem được dữ liệu của chính mình
-                boolean logout = new CustomerMenu(customerManager, acc.getLinkedId(), productManager).show();
+                boolean logout = new CustomerMenu(customerManager, acc.getLinkedId(), productManager,salesManager).show();
                 if (!logout) {   // show() trả false khi khách chọn [0] Thoát chương trình
                     System.out.println("\n[✓] Tạm biệt!");
                     System.exit(0);
