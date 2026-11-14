@@ -49,8 +49,6 @@ public class SalesManager {
     private boolean isDataLine(String line) {
         return line != null && !line.trim().isEmpty() && !line.trim().startsWith("#");
     }
-    // FileIO.writeLines tự giữ lại dòng "# Format" có sẵn ở đầu file,
-    // nên ở đây chỉ đưa dòng dữ liệu vào list (giống AccountManager, CustomerManager)
     private boolean saveInvoices() {
         List<String> lines = new ArrayList<>();
         for (Invoice invoice : invoices) lines.add(invoice.toFileString());
@@ -62,7 +60,8 @@ public class SalesManager {
         return FileIO.writeLines(DETAIL_FILE, lines);
     }
     private boolean savePayments() {
-        return FileIO.writeLines(PAYMENT_FILE, new ArrayList<>(paymentLines));
+        List<String> lines = new ArrayList<>(paymentLines);
+        return FileIO.writeLines(PAYMENT_FILE, lines);
     }
 
     public List<Invoice> getAllInvoices() { return new ArrayList<>(invoices); }
@@ -191,6 +190,25 @@ public class SalesManager {
     public String getSaleDateBySerial(String serial) {
         Invoice invoice = findPaidInvoiceBySerial(serial);
         return invoice == null ? null : invoice.getCreationDate();
+    }
+
+    /** Sinh ma thanh toan tiep theo theo quy uoc PAY01, PAY02, ... */
+    public String nextPaymentId() {
+        int max = 0;
+        for (String line : paymentLines) {
+            String[] fields = line.split("\\|", -1);
+            if (fields.length > 0) {
+                String id = fields[0].trim();
+                if (id.matches("PAY\\d+")) {
+                    try {
+                        max = Math.max(max, Integer.parseInt(id.substring(3)));
+                    } catch (NumberFormatException e) {
+                        // Bo qua ma thanh toan khong hop le.
+                    }
+                }
+            }
+        }
+        return String.format("PAY%02d", max + 1);
     }
 
     public double revenueToday() {

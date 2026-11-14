@@ -54,4 +54,10 @@ public class InputHelper {
             System.out.println("(!) Vui lòng nhập Y hoặc N!");
         }
     }
+
+    // Đọc chuỗi tùy chọn (cho phép nhấn Enter để bỏ qua / nhận giá trị mặc định)
+    public static String readOptionalString(String text) {
+        System.out.print(text);
+        return scanner.nextLine().trim();
+    }
 }

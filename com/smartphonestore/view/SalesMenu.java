@@ -79,8 +79,15 @@ public class SalesMenu {
 
     private void createInvoice() {
         String invoiceId = salesManager.nextInvoiceId();
-        String customerId = InputHelper.readString("Ma khach hang (nhap KHACHLE neu khach le): ");
-        if ("KHACHLE".equalsIgnoreCase(customerId)) customerId = "";
+        String customerId = InputHelper.readString("Ma khach hang (nhap KHACHLE neu khach le): ")
+                .trim().toUpperCase();
+        if ("KHACHLE".equals(customerId)) {
+            customerId = "";
+        } else if (customerManager == null || customerManager.findById(customerId) == null) {
+            System.out.println("(!) Khong tim thay khach hang " + customerId
+                    + ". Tao ho so khach truoc hoac chon KHACHLE.");
+            return;
+        }
         List<InvoiceDetail> lines = new ArrayList<>();
         System.out.println("Quet/nhap tung Serial/IMEI. Nhap 0 de ket thuc.");
         while (true) {
@@ -134,7 +141,7 @@ public class SalesMenu {
         Invoice invoice = findUnpaidInvoice(); if (invoice == null) return;
         double total = invoice.calculateFinalTotal();
         double given = InputHelper.readDouble("Can thu " + String.format("%,.0f", total) + " VND. Tien khach dua: ", total);
-        CashPayment payment = new CashPayment(nextPaymentId(), invoice.getId(), total,
+        CashPayment payment = new CashPayment(salesManager.nextPaymentId(), invoice.getId(), total,
                 "CASH-" + System.currentTimeMillis(), given);
         if (completePayment(invoice, payment))
             System.out.printf("Thanh toan thanh cong. Tien thoi: %,.0f VND%n", payment.calculateChange());
@@ -143,11 +150,11 @@ public class SalesMenu {
     private void payElectronic() {
         Invoice invoice = findUnpaidInvoice(); if (invoice == null) return;
         String bank = InputHelper.readString("Ngan hang/vi dien tu: ");
-        ElectronicPayment payment = new ElectronicPayment(nextPaymentId(), invoice.getId(),
+        ElectronicPayment payment = new ElectronicPayment(salesManager.nextPaymentId(), invoice.getId(),
                 invoice.calculateFinalTotal(), "QR-" + System.currentTimeMillis(), bank);
         System.out.println("Chuoi QR tham chieu (demo): " + payment.generatePaymentQRCode());
-        String confirmed = InputHelper.readString("Da xac nhan giao dich? (Y/N): ");
-        if ("Y".equalsIgnoreCase(confirmed)) completePayment(invoice, payment);
+        boolean confirmed = InputHelper.readYesNo("Da xac nhan giao dich? (Y/N): ");
+        if (confirmed) completePayment(invoice, payment);
         else System.out.println("Chua xac nhan; hoa don van UNPAID.");
     }
 
@@ -176,5 +183,4 @@ public class SalesMenu {
         String id = InputHelper.readString("Ma hoa don can huy: ");
         System.out.println(salesManager.cancelInvoice(id) ? "Da huy hoa don va tra serial ve kho." : "Khong huy duoc hoa don.");
     }
-    private String nextPaymentId() { return "PAY" + System.currentTimeMillis(); }
 }

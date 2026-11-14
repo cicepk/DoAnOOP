@@ -4,6 +4,7 @@ import com.smartphonestore.model.customer.*;
 import com.smartphonestore.util.DateUtil;
 import com.smartphonestore.util.FileIO;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import com.smartphonestore.exception.ValidationException;
 
@@ -409,8 +410,9 @@ public class CustomerManager {
         if (hasOpenClaim(sn)) {
             throw new ValidationException("Seri " + sn + " đang có phiếu bảo hành chưa hoàn tất");
         }
-        LocalDate today = LocalDate.now();
-        WarrantyClaim w = new WarrantyClaim(nextClaimId(), c.getId(), productId, sn, issue, today, saleDate, warrantyMonths);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
+        WarrantyClaim w = new WarrantyClaim(nextClaimId(), c.getId(), productId, sn, issue, now, saleDate, warrantyMonths);
         if (!w.isUnderWarrantyOn(today)) {
             throw new IllegalArgumentException("Seri " + sn + " đã hết hạn bảo hành từ ngày "+ DateUtil.format(w.getWarrantyExpiryDate()));
         }

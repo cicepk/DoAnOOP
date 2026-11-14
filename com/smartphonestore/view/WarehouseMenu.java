@@ -123,10 +123,14 @@ public class WarehouseMenu {
                     String now = DateUtil.nowText();
                     String importDate = now;
                     if (!InputHelper.readYesNo("Su dung thoi gian nhap kho hien tai (" + now + ")? (Y/N): ")) {
-                        importDate = InputHelper.readString("Nhap ngay gio nhap kho [dd/MM/yyyy HH:mm:ss]: ");
-                        if (importDate.matches("^\\d{2}/\\d{2}/\\d{4}$")) {
-                            String timePart = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
-                            importDate = importDate + " " + timePart;
+                        while (true) {
+                            String text = InputHelper.readString("Nhap ngay gio nhap kho [dd/MM/yyyy HH:mm:ss]: ");
+                            try {
+                                importDate = DateUtil.formatDateTime(DateUtil.parseDateTime(text)); // chi go ngay thi tu dong lay 00:00:00
+                                break;
+                            } catch (IllegalArgumentException e) {
+                                System.out.println("[X] " + e.getMessage());
+                            }
                         }
                     }
 
@@ -157,28 +161,32 @@ public class WarehouseMenu {
 
                             // Nhập số IMEI/Seri cho từng máy trong lô
                             List<ProductDetail> batchDetails = new ArrayList<>();
+                            Set<String> batchSerials = new HashSet<>(); // serial da nhap trong lo nay
                             boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
                                 if (autoSn) {
-                                    serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", i);
+                                    int k = i;
+                                    do { // sinh lai toi khi khong trung kho va khong trung lo
+                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", k++);
+                                    } while (prd.isSerialExists(serial) || batchSerials.contains(serial));
                                     System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
                                 } else {
                                     while (true) {
                                         serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
-                                        if (prd.isSerialExists(serial)) {
-                                            System.out.println("   [X] So Seri/IMEI nay da ton tai trong kho! Vui long nhap lai.");
+                                        if (prd.isSerialExists(serial) || batchSerials.contains(serial)) {
+                                            System.out.println("   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
                                             continue;
                                         }
                                         break;
                                     }
                                 }
-                                batchDetails.add(new ProductDetail(p.getId(), p.getName(), serial, importDate, importPrice, supplier, "IN_STOCK"));
+                                batchSerials.add(serial);
+                                batchDetails.add(new ProductDetail(p.getId(), p.getName(), serial, importDate, importPrice, supplier, ProductManager.IN_STOCK));
                             }
 
-                            p.increaseStock(qty);
                             prd.addProductDetails(batchDetails);
-                            prd.saveToFile();
+                            prd.syncStockFromDetails(); // thay cho p.increaseStock(qty): ton kho = so serial IN_STOCK thực tế
 
                             sessionItemCount++;
                             sessionTotalQty += qty;
@@ -245,28 +253,34 @@ public class WarehouseMenu {
 
                             // Nhập danh sách IMEI/Seri cho sản phẩm mới
                             List<ProductDetail> batchDetails = new ArrayList<>();
+                            Set<String> batchSerials = new HashSet<>(); // serial da nhap trong lo nay
                             boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
                                 if (autoSn) {
-                                    serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", i);
+                                    int k = i;
+                                    do { // sinh lai toi khi khong trung kho va khong trung lo
+                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", k++);
+                                    } while (prd.isSerialExists(serial) || batchSerials.contains(serial));
                                     System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
                                 } else {
                                     while (true) {
                                         serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
-                                        if (prd.isSerialExists(serial)) {
-                                            System.out.println("   [X] So Seri/IMEI nay da ton tai trong kho! Vui long nhap lai.");
+                                        if (prd.isSerialExists(serial) || batchSerials.contains(serial)) {
+                                            System.out.println("   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
                                             continue;
                                         }
                                         break;
                                     }
                                 }
-                                batchDetails.add(new ProductDetail(id, name, serial, importDate, importPrice, supplier, "IN_STOCK"));
+                                batchSerials.add(serial);
+                                batchDetails.add(new ProductDetail(id, name, serial, importDate, importPrice, supplier, ProductManager.IN_STOCK));
                             }
 
                             boolean added = prd.add(newProduct);
                             if (added) {
                                 prd.addProductDetails(batchDetails);
+                                prd.syncStockFromDetails(); // dong bo ton kho chinh xac tu serial IN_STOCK
                                 sessionItemCount++;
                                 sessionTotalQty += qty;
                                 sessionTotalCost += (qty * importPrice);
