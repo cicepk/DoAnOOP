@@ -74,7 +74,7 @@ public class CustomerMenu {
     }
 
     private void updateContact() {
-        String phone = InputHelper.readString("SĐT mới (10 số, bắt đầu bằng 0): ");
+        String phone = InputHelper.readString("SĐT mới (10 hoặc 11 số, bắt đầu bằng 0): ");
         String email = InputHelper.readString("Email mới: ");
         manager.updateContact(customerId, phone, email);
         System.out.println("Đã cập nhật thông tin.");
