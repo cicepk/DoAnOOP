@@ -106,9 +106,21 @@ public class SalesMenu {
             }
         }
         if (lines.isEmpty()) { System.out.println("Khong tao hoa don rong."); return; }
+
+        // [TC07] Tính ưu đãi VIP: trước đây không gọi getVipDiscount nên khách VIP trả đủ giá.
+        // getVipDiscount (TV4) trả về 0 cho khách thường; khách lẻ (mã rỗng) thì bỏ qua.
+        double subtotal = 0;
+        for (InvoiceDetail detail : lines) subtotal += detail.calculateLineTotal();
+        double discount = 0;
+        if (!customerId.isEmpty() && customerManager != null) {
+            discount = customerManager.getVipDiscount(customerId, subtotal);
+            if (discount > 0) System.out.printf("Khach VIP: giam %,.0f VND tren tien hang.%n", discount);
+        }
+
         double vatPercent = InputHelper.readDouble("VAT (%), nhap 8 neu VAT 8%: ", 0);
         if (vatPercent > 100) throw new IllegalArgumentException("VAT khong duoc vuot qua 100%.");
-        salesManager.createInvoice(invoiceId, customerId, staffId, vatPercent / 100.0, lines);
+        // [TC07] Gọi hàm createInvoice mới có tham số giảm giá
+        salesManager.createInvoice(invoiceId, customerId, staffId, vatPercent / 100.0, discount, lines);
         System.out.println("Da tao hoa don " + invoiceId + " (UNPAID).");
     }
 

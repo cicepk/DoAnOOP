@@ -7,7 +7,6 @@ import com.smartphonestore.model.sale.InvoiceDetail;
 import com.smartphonestore.model.sale.Payment;
 import com.smartphonestore.util.DateUtil;
 import com.smartphonestore.util.FileIO;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -98,6 +97,12 @@ public class SalesManager {
 
     public boolean createInvoice(String id, String customerId, String staffId, double vatRate,
                                  List<InvoiceDetail> newDetails) {
+        return createInvoice(id, customerId, staffId, vatRate, 0, newDetails);
+    }
+
+    //Hàm mới: nhận thêm tiền giảm giá VIP do SalesMenu tính từ CustomerManager (TV4)
+    public boolean createInvoice(String id, String customerId, String staffId, double vatRate,
+                                 double discountAmount, List<InvoiceDetail> newDetails) {
         if (newDetails == null || newDetails.isEmpty())
             throw new IllegalArgumentException("Hoa don phai co it nhat mot dien thoai.");
         if (findInvoice(id) != null) throw new IllegalArgumentException("Ma hoa don da ton tai.");
@@ -112,6 +117,10 @@ public class SalesManager {
             if (error != null) throw new IllegalArgumentException(error);
             subtotal += detail.calculateLineTotal();
         }
+        // Kiểm tra giảm giá TRƯỚC khi đổi trạng thái serial,
+        // nếu để sau thì giảm giá sai sẽ làm serial bị chuyển SOLD mà không có hóa đơn
+        if (discountAmount < 0 || discountAmount > subtotal)
+            throw new IllegalArgumentException("Tien giam gia khong hop le.");
 
         // Doi serial IN_STOCK -> SOLD; neu loi giua chung thi hoan tac cac serial da doi.
         List<String> soldSerials = new ArrayList<>();
@@ -123,8 +132,9 @@ public class SalesManager {
             soldSerials.add(detail.getSerialNumber());
         }
 
+        // Truyền tiền giảm giá vào hóa đơn
         Invoice invoice = new Invoice(id, customerId, staffId, DateUtil.nowText(), subtotal,
-                "UNPAID", vatRate, newDetails);
+                "UNPAID", vatRate, discountAmount, newDetails);
         invoices.add(invoice); details.addAll(newDetails);
         if (!saveInvoices() || !saveDetails()) {
             invoices.remove(invoice); details.removeAll(newDetails);

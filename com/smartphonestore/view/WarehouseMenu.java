@@ -407,12 +407,19 @@ public class WarehouseMenu {
                         System.out.printf("San pham: %s | Gia goc: %,.0f VND%n", p.getName(), p.getPrice());
                         double rate = InputHelper.readDouble("Nhap ty le chiet khau (vi du 0.1 cho 10%, 0.2 cho 20%): ", 0.0, 1.0);
 
-                        double discountedPrice = prd.applyDiscount(p.getId(), rate);
-                        if (discountedPrice > 0) {
-                            System.out.printf("[OK] Da ap dung giam gia %.0f%% thanh cong!%n", rate * 100);
-                            System.out.printf("[OK] Gia moi cua '%s': %,.0f VND (Da dong bo vao 'products.txt')%n", p.getName(), discountedPrice);
-                        } else {
+                        // [TC08] Trước đây gọi ngay prd.applyDiscount(): hàm này setPrice + saveToFile,
+                        // nên giá gốc bị ghi đè và lần sau giảm chồng lên giá đã giảm
+                        // (29.990.000 -> 26.991.000 -> 24.291.900).
+                        // Giờ: chỉ TÍNH thử giá sau giảm (đa hình qua IDiscountable), hỏi Y/N rồi mới lưu.
+                        double preview = ((IDiscountable) p).calculateDiscountedPrice(rate);
+                        System.out.printf("Gia sau giam %.0f%%: %,.0f VND%n", rate * 100, preview);
+                        if (preview <= 0 || preview == p.getPrice()) {
                             System.out.println("[X] Khong ap dung duoc chiet khau!");
+                        } else if (InputHelper.readYesNo("Luu gia moi nay vao 'products.txt'? (Y/N): ")) {
+                            prd.applyDiscount(p.getId(), rate);   // [TC08] chỉ đổi giá khi người dùng đồng ý
+                            System.out.printf("[OK] Gia moi cua '%s': %,.0f VND (Da dong bo vao 'products.txt')%n", p.getName(), p.getPrice());
+                        } else {
+                            System.out.println("[OK] Chi xem thu, gia ban giu nguyen.");
                         }
                     }
                     break;
