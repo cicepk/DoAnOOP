@@ -19,9 +19,6 @@ public class SalesManager {
     private static final String INVOICE_FILE = "data/invoices.txt";
     private static final String DETAIL_FILE = "data/invoice_details.txt";
     private static final String PAYMENT_FILE = "data/payments.txt";
-    private static final String INVOICE_HEADER = "# Format: id|customerId|staffId|creationDate|totalAmount|status|vatTaxRate";
-    private static final String DETAIL_HEADER = "# Format: invoiceId|productId|productName|serialNumber|unitPrice|quantity";
-    private static final String PAYMENT_HEADER = "# Format: id|invoiceId|amount|paymentDate|method|transactionCode|extraData";
 
     private final List<Invoice> invoices = new ArrayList<>();
     private final List<InvoiceDetail> details = new ArrayList<>();
@@ -52,19 +49,20 @@ public class SalesManager {
     private boolean isDataLine(String line) {
         return line != null && !line.trim().isEmpty() && !line.trim().startsWith("#");
     }
+    // FileIO.writeLines tự giữ lại dòng "# Format" có sẵn ở đầu file,
+    // nên ở đây chỉ đưa dòng dữ liệu vào list (giống AccountManager, CustomerManager)
     private boolean saveInvoices() {
-        List<String> lines = new ArrayList<>(); lines.add(INVOICE_HEADER);
+        List<String> lines = new ArrayList<>();
         for (Invoice invoice : invoices) lines.add(invoice.toFileString());
         return FileIO.writeLines(INVOICE_FILE, lines);
     }
     private boolean saveDetails() {
-        List<String> lines = new ArrayList<>(); lines.add(DETAIL_HEADER);
+        List<String> lines = new ArrayList<>();
         for (InvoiceDetail detail : details) lines.add(detail.toFileString());
         return FileIO.writeLines(DETAIL_FILE, lines);
     }
     private boolean savePayments() {
-        List<String> lines = new ArrayList<>(); lines.add(PAYMENT_HEADER); lines.addAll(paymentLines);
-        return FileIO.writeLines(PAYMENT_FILE, lines);
+        return FileIO.writeLines(PAYMENT_FILE, new ArrayList<>(paymentLines));
     }
 
     public List<Invoice> getAllInvoices() { return new ArrayList<>(invoices); }
