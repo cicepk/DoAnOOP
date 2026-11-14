@@ -1,4 +1,4 @@
-﻿# Format: productId|productName|serialNumber|importDate|importPrice|supplier|status
+# Format: productId|productName|serialNumber|importDate|importPrice|supplier|status
 PRD01|iPhone 15 Pro Max 256GB|IMEI0124263901|10/11/2026 08:30:00|24590000|FPT_Synnex|IN_STOCK
 PRD01|iPhone 15 Pro Max 256GB|IMEI8601001001|22/10/2026 08:30:00|24590000|FPT_Synnex|SOLD
 PRD01|iPhone 15 Pro Max 256GB|IMEI8601001002|25/10/2026 09:15:00|24590000|FPT_Synnex|IN_STOCK

@@ -1,5 +1,5 @@
 # Format: id|username|password|role(ADMIN/WAREHOUSE/SALES/CUSTOMER)|status(ACTIVE/LOCKED)|lastLoginTime|linkedId(EMPxx cho nhan vien, CUSxx cho khach hang)
-ACC01|admin|admin123|ADMIN|ACTIVE|12/11/2026 08:30:00|EMP01
+ACC01|admin|admin123|ADMIN|ACTIVE|15/11/2026 02:39:20|EMP01
 ACC02|kho01|kho123|WAREHOUSE|ACTIVE|12/11/2026 09:15:22|EMP02
 ACC03|banhang01|sales123|SALES|ACTIVE|12/11/2026 09:45:10|EMP03
 ACC04|banhang02|sales456|SALES|ACTIVE|Chưa đăng nhập|EMP04
