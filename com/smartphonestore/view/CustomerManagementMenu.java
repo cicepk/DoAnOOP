@@ -2,7 +2,7 @@ package com.smartphonestore.view;
 
 import com.smartphonestore.manager.AccountManager;
 import com.smartphonestore.manager.CustomerManager;
-import com.smartphonestore.manager.InvoiceManager;
+import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.manager.ProductManager;
 import com.smartphonestore.model.product.Phone;
 import com.smartphonestore.model.product.ProductDetail;
@@ -17,22 +17,22 @@ import java.util.List;
 /**
  * Menu "QUẢN LÝ KHÁCH HÀNG" dành cho ADMIN và nhân viên BÁN HÀNG (TV4).
  * Gọi từ AdminMenu (TV1) và SalesMenu (TV3):
- *     new CustomerManagementMenu(customerManager, accountManager, invoiceManager, productManager, role).show();
+ *     new CustomerManagementMenu(customerManager, accountManager, SalesManager, productManager, role).show();
  */
 public class CustomerManagementMenu {
     private final CustomerManager manager;
     private final AccountManager accountManager;
-    private final InvoiceManager invoiceManager;
+    private final SalesManager salesManager;
     private final ProductManager productManager;
     private final Role role;
 
-    public CustomerManagementMenu(CustomerManager manager, AccountManager accountManager, InvoiceManager invoiceManager, ProductManager productManager, Role role) {
+    public CustomerManagementMenu(CustomerManager manager, AccountManager accountManager, SalesManager salesManager, ProductManager productManager, Role role) {
         if (role != Role.ADMIN && role != Role.SALES) {
             throw new IllegalArgumentException("Chỉ Quản trị viên và Nhân viên bán hàng được vào menu này");
         }
         this.manager = manager;
         this.accountManager = accountManager;
-        this.invoiceManager = invoiceManager;
+        this.salesManager = salesManager;
         this.productManager = productManager;
         this.role = role;
     }
@@ -140,8 +140,8 @@ public class CustomerManagementMenu {
             return;
         }
         if (manager.deleteCustomer(c.getId())) {
-            accountManager.lockByLinkedId(c.getId());   // tài khoản đăng nhập của khách cũng bị khóa
-            System.out.println("Tài khoản liên kết đã bị khóa (nếu có).");
+            accountManager.removeAccountsByOwnerId(c.getId());   // tài khoản đăng nhập của khách bị xóa
+            System.out.println("Đã xóa khách và tài khoản đăng nhập liên kết (nếu có).");
         }
     }
 
@@ -158,10 +158,9 @@ public class CustomerManagementMenu {
 
     private void checkRank() {
         Customer c = askCustomer();
-        // Đa hình: STANDARD và VIP cùng gọi evaluateRank() nhưng kết quả khác nhau
-        ILoyaltyRankable r = (ILoyaltyRankable) c;
+        
         System.out.printf("%s (%s) - đã chi tiêu %,.0f đ%n", c.getFullName(), c.getId(), c.getTotalSpent());
-        System.out.println("Hạng: " + r.evaluateRank());
+        System.out.println("Hạng: " + c.evaluateRank());
     }
 
     private void calcVipDiscount() {
@@ -223,16 +222,26 @@ public class CustomerManagementMenu {
     /** Nhân viên chỉ nhập số seri: hệ thống tự tìm người mua, ngày bán và thời hạn bảo hành. */
     private void receiveClaim() {
         String serial = InputHelper.readString("Số seri máy: ").trim().toUpperCase();
-        String buyerId = invoiceManager.getBuyerIdBySerial(serial);              // TV3
+        String buyerId = salesManager.getBuyerIdBySerial(serial);              // TV3
         if (buyerId == null) {
-            throw new IllegalArgumentException("Seri này chưa được bán hoặc hóa đơn đã bị hủy");
+            throw new IllegalArgumentException("Seri này chưa bán, chưa thanh toán, đã hủy hoặc hóa đơn không có mã khách");
         }
         ProductDetail detail = productManager.findDetailBySerial(serial);
-        if (detail == null) throw new IllegalArgumentException("Không có số seri " + serial + " trong kho");
+
+        if (detail == null) {
+            throw new IllegalArgumentException("Không có số seri " + serial + " trong kho");
+        }
+
+        // Chỉ tiếp nhận bảo hành nếu máy đã bán
+        if (!ProductManager.SOLD.equals(detail.getStatus())) {
+            throw new IllegalArgumentException(
+                "Seri đang ở trạng thái " + detail.getStatus() + ", không nhận bảo hành"
+            );
+        }
         String productId = detail.getProductId();
-        LocalDate saleDate = DateUtil.parse(invoiceManager.getSaleDateBySerial(serial));   // TV3
+        LocalDate saleDate = DateUtil.parse(salesManager.getSaleDateBySerial(serial));   // TV3
         Product product = productManager.findByID(productId);
-        int months = (product instanceof Phone) ? ((Phone) product).getWarrantyMonths() : 0;              
+        int months =product.getWarrantyMonths();             
         Customer buyer = manager.findById(buyerId);
         if (buyer == null) {
             throw new IllegalArgumentException("Người mua " + buyerId + " chưa có hồ sơ khách hàng");
@@ -241,7 +250,12 @@ public class CustomerManagementMenu {
         System.out.println("Sản phẩm  : " + productId + " | bán ngày " + DateUtil.format(saleDate)
                 + " | bảo hành " + months + " tháng");
         String issue = InputHelper.readString("Mô tả lỗi: ");
-        WarrantyClaim w = manager.addClaim(serial, productId, buyer.getId(), saleDate, months, issue);
+        WarrantyClaim w = manager.addClaim(serial, productId, buyer.getId(), issue, saleDate, months);
+        boolean changed=productManager.setWarrantyStatus(serial, true); // SOLD -> WARRANTY
+        if (!changed) {
+            System.out.println("Không thể chuyển trạng thái máy sang WARRANTY.");
+            return;
+        }
         System.out.println("Đã tiếp nhận phiếu " + w.getClaimId() + ". Còn bảo hành đến "
                 + DateUtil.format(w.getWarrantyExpiryDate()) + ". " + w.getExpectedCompletionText() + ".");
     }
@@ -300,6 +314,9 @@ public class CustomerManagementMenu {
         else if (s == 2) newStatus = WarrantyClaim.HOAN_TAT;
         else newStatus = WarrantyClaim.TU_CHOI;
         manager.updateClaimStatus(w.getClaimId(), newStatus);   // phiếu đã đóng thì ném lỗi
+        if (w.isClosed()) {
+            productManager.setWarrantyStatus(w.getSerialNumber(), false);
+        }   
         System.out.println("Đã cập nhật.");
     }
 

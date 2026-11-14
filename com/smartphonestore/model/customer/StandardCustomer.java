@@ -1,12 +1,14 @@
 package com.smartphonestore.model.customer;
 
-public class StandardCustomer extends Customer implements ILoyaltyRankable {
+import com.smartphonestore.exception.ValidationException;
+
+public class StandardCustomer extends Customer  {
     public static final double VIP_THRESHOLD = 15_000_000;   // ngưỡng để lên VIP
     private int visitCount;                                  // số lần khách đã mua hàng
 
     public StandardCustomer(String id, String fullName, String phoneNumber, String email, double totalSpent, int visitCount) {
         super(id, fullName, phoneNumber, email, totalSpent);
-        if (visitCount < 0) throw new IllegalArgumentException("Số lần mua không được âm");
+        if (visitCount < 0) throw new ValidationException("Số lần mua không được âm");
         this.visitCount = visitCount;
     }
 

@@ -32,14 +32,13 @@ public class CustomerReview {
     }
 
     public String toFileLine() {
-        return String.join("|", reviewId, customerId, productId, reviewDate,
-                String.valueOf(ratingStars), comment);
+        return String.join("|", reviewId, customerId, productId,String.valueOf(ratingStars), comment, reviewDate);
     }
 
     public static CustomerReview fromFileLine(String line) {
         String[] f = line.split("\\|", -1);
         if (f.length < 6) throw new IllegalArgumentException("Dòng đánh giá phải có 6 cột");
-        return new CustomerReview(f[0], f[1], f[2],  Integer.parseInt(f[4]), f[5], f[6]);
+        return new CustomerReview(f[0], f[1], f[2],  Integer.parseInt(f[3]), f[4], f[5]);
     }
 
     public static void printHeader() {

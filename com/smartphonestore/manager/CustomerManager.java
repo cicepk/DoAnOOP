@@ -5,6 +5,7 @@ import com.smartphonestore.util.DateUtil;
 import com.smartphonestore.util.FileIO;
 import java.time.LocalDate;
 import java.util.*;
+import com.smartphonestore.exception.ValidationException;
 
 /**
  * Quản lý khách hàng, đánh giá và phiếu bảo hành (TV4).
@@ -20,6 +21,10 @@ public class CustomerManager {
     private final List<CustomerReview> reviews = new ArrayList<>();
     private final List<WarrantyClaim> warrantyClaims = new ArrayList<>();
 
+    private boolean customerFileOk = true;
+    private boolean reviewFileOk = true;
+    private boolean claimFileOk = true;
+
     public CustomerManager() {
         loadAll();
     }
@@ -29,7 +34,7 @@ public class CustomerManager {
     // =====================================================================
     private Customer parseCustomer(String line) {
         String[] f = line.split("\\|", -1);
-        if (f.length < 7) throw new IllegalArgumentException("Dòng khách hàng phải có 7 cột");
+        if (f.length < 7) throw new ValidationException("Dòng khách hàng phải có 7 cột");
         double spent = Double.parseDouble(f[4]);
         if (f[5].equals("VIP")) {
             return new VipCustomer(f[0], f[1], f[2], f[3], spent, Double.parseDouble(f[6]));
@@ -37,7 +42,7 @@ public class CustomerManager {
         if (f[5].equals("STANDARD")) {
             return new StandardCustomer(f[0], f[1], f[2], f[3], spent, Integer.parseInt(f[6]));
         }
-        throw new IllegalArgumentException("Loại khách không hợp lệ: " + f[5]);
+        throw new ValidationException("Loại khách không hợp lệ: " + f[5]);
     }
 
     public void loadAll() {
@@ -49,6 +54,7 @@ public class CustomerManager {
                 temp[n] = parseCustomer(line);
                 n++;                       // chỉ tăng khi đọc thành công
             } catch (Exception e) {
+                customerFileOk = false;
                 System.err.println("Lỗi đọc file khách hàng ở dòng [" + line + "]: " + e.getMessage());
             }
         }
@@ -59,6 +65,7 @@ public class CustomerManager {
             try {
                 reviews.add(CustomerReview.fromFileLine(line));
             } catch (Exception e) {
+                reviewFileOk = false;
                 System.err.println("Lỗi đọc file đánh giá ở dòng [" + line + "]: " + e.getMessage());
             }
         }
@@ -68,21 +75,55 @@ public class CustomerManager {
             try {
                 warrantyClaims.add(WarrantyClaim.fromFileLine(line));
             } catch (Exception e) {
+                claimFileOk = false;
                 System.err.println("Lỗi đọc file bảo hành ở dòng [" + line + "]: " + e.getMessage());
             }
         }
     }
 
-    public void saveAll() {
-        List<String> a = new ArrayList<>();
-        List<String> b = new ArrayList<>();
-        List<String> c = new ArrayList<>();
-        for (Customer x : customers) a.add(x.toFileLine());
-        for (CustomerReview r : reviews) b.add(r.toFileLine());
-        for (WarrantyClaim w : warrantyClaims) c.add(w.toFileLine());
-        FileIO.writeLines(CUSTOMER_FILE, a);
-        FileIO.writeLines(REVIEW_FILE, b);
-        FileIO.writeLines(CLAIM_FILE, c);
+    private void saveCustomers() {
+        if (!customerFileOk) {
+            System.err.println("(!) Không ghi customers.txt vì lúc đọc có lỗi");
+            return;
+        }
+
+        List<String> lines = new ArrayList<>();
+
+        for (Customer c : customers) {
+            lines.add(c.toFileLine());
+        }
+
+        FileIO.writeLines(CUSTOMER_FILE, lines);
+    }
+
+    private void saveReviews() {
+        if (!reviewFileOk) {
+            System.err.println("(!) Không ghi reviews.txt vì lúc đọc có lỗi");
+            return;
+        }
+
+        List<String> lines = new ArrayList<>();
+
+        for (CustomerReview r : reviews) {
+            lines.add(r.toFileLine());
+        }
+
+        FileIO.writeLines(REVIEW_FILE, lines);
+    }
+
+    private void saveClaims() {
+        if (!claimFileOk) {
+            System.err.println("(!) Không ghi warranty_claims.txt vì lúc đọc có lỗi");
+            return;
+        }
+
+        List<String> lines = new ArrayList<>();
+
+        for (WarrantyClaim w : warrantyClaims) {
+            lines.add(w.toFileLine());
+        }
+
+        FileIO.writeLines(CLAIM_FILE, lines);
     }
 
     /** Phần số của mã CUS012 -> 12). Mã sai định dạng coi như 0 để không làm sập chương trình. */
@@ -100,7 +141,7 @@ public class CustomerManager {
     public String nextCustomerId() {
         int max = 0;
         for (Customer c : customers) max = Math.max(max, suffixOf(c.getId()));
-        return String.format("CUS%03d", max + 1);
+        return String.format("CUS%02d", max + 1);
     }
 
     public Customer findById(String id) {
@@ -121,7 +162,7 @@ public class CustomerManager {
 
     private Customer requireCustomer(String id) {
         Customer c = findById(id);
-        if (c == null) throw new IllegalArgumentException("Không tìm thấy khách hàng " + id);
+        if (c == null) throw new ValidationException("Không tìm thấy khách hàng " + id);
         return c;
     }
 
@@ -129,7 +170,7 @@ public class CustomerManager {
     private void checkPhoneNotUsed(String phone, String excludeId) {
         Customer other = findByPhone(phone);
         if (other != null && !other.getId().equalsIgnoreCase(excludeId)) {
-            throw new IllegalArgumentException("SĐT này đã thuộc về khách " + other.getId() + " - " + other.getFullName());
+            throw new ValidationException("SĐT này đã thuộc về khách " + other.getId() + " - " + other.getFullName());
         }
     }
 
@@ -141,7 +182,7 @@ public class CustomerManager {
         for (int i = 0; i < customers.length; i++) temp[i] = customers[i];
         temp[customers.length] = c;
         customers = temp; 
-        saveAll();
+        saveCustomers();
         return c;
     }
 
@@ -156,13 +197,13 @@ public class CustomerManager {
             c.setPhoneNumber(phone);
             c.setEmail(email);
             checkPhoneNotUsed(c.getPhoneNumber(), c.getId());
-        } catch (IllegalArgumentException e) {
+        } catch (ValidationException e) {
             c.setFullName(oldName);
             c.setPhoneNumber(oldPhone);
             c.setEmail(oldEmail);
             throw e;
         }
-        saveAll();
+        saveCustomers();
     }
 
     /** Khách tự sửa SĐT / email của mình (không đổi họ tên). */
@@ -179,10 +220,10 @@ public class CustomerManager {
         Customer target = findById(id);
         if (target == null) return false;
         if (target.getTotalSpent() > 0) {
-            throw new IllegalArgumentException("Khách đã có giao dịch mua hàng, không thể xóa");
+            throw new ValidationException("Khách đã có giao dịch mua hàng, không thể xóa");
         }
         if (!getClaimsByCustomer(target.getId()).isEmpty()) {
-            throw new IllegalArgumentException("Khách còn lịch sử bảo hành, không thể xóa");
+            throw new ValidationException("Khách còn lịch sử bảo hành, không thể xóa");
         }
         reviews.removeIf(r -> r.getCustomerId().equalsIgnoreCase(target.getId()));
         Customer[] temp = new Customer[customers.length - 1];
@@ -191,7 +232,8 @@ public class CustomerManager {
             if (c != target) temp[j++] = c;
         }
         customers = temp;
-        saveAll();
+        saveCustomers();
+        saveReviews();
         return true;
     }
 
@@ -215,11 +257,11 @@ public class CustomerManager {
     public Customer upgradeToVip(String id) {
         Customer old = requireCustomer(id);
         if (!(old instanceof StandardCustomer)) {
-            throw new IllegalArgumentException("Khách hàng đã là VIP");
+            throw new ValidationException("Khách hàng đã là VIP");
         }
         StandardCustomer sc = (StandardCustomer) old;
         if (!sc.isEligibleForUpgrade()) {
-            throw new IllegalArgumentException(String.format(
+            throw new ValidationException(String.format(
                     "Chưa đủ điều kiện lên VIP: còn thiếu %,.0f đ", StandardCustomer.VIP_THRESHOLD - sc.getTotalSpent()));
         }
         Customer vip = new VipCustomer(sc.getId(), sc.getFullName(), sc.getPhoneNumber(), sc.getEmail(),
@@ -227,7 +269,7 @@ public class CustomerManager {
         for (int i = 0; i < customers.length; i++) {
             if (customers[i] == old) customers[i] = vip;
         }
-        saveAll();
+        saveCustomers();
         return vip;
     }
 
@@ -237,13 +279,13 @@ public class CustomerManager {
         Customer c = requireCustomer(customerId);
         c.accumulateSpending(amount);
         if (c instanceof StandardCustomer) ((StandardCustomer) c).increaseVisit();
-        saveAll();
+        saveCustomers();
     }
 
     /** TV3 gọi khi hủy hóa đơn đã ghi nhận: trừ lại số tiền. */
     public void refundPurchase(String customerId, double amount) {
         requireCustomer(customerId).reduceSpending(amount);
-        saveAll();
+        saveCustomers();
     }
 
     /** TV3 gọi khi tính tiền: số tiền khách được giảm (khách STANDARD trả về 0). */
@@ -259,7 +301,7 @@ public class CustomerManager {
     public String nextReviewId() {
         int max = 0;
         for (CustomerReview r : reviews) max = Math.max(max, suffixOf(r.getReviewId()));
-        return String.format("REV%03d", max + 1);
+        return String.format("REV%02d", max + 1);
     }
 
     public CustomerReview findReview(String reviewId) {
@@ -273,15 +315,15 @@ public class CustomerManager {
         Customer c = requireCustomer(customerId);
         CustomerReview r = new CustomerReview(nextReviewId(), c.getId(), productId,  ratingStars, comment,DateUtil.today());
         reviews.add(r);
-        saveAll();
+        saveReviews();
         return r;
     }
 
     private CustomerReview requireOwnReview(String reviewId, String customerId) {
         CustomerReview r = findReview(reviewId);
-        if (r == null) throw new IllegalArgumentException("Không tìm thấy đánh giá " + reviewId);
+        if (r == null) throw new ValidationException("Không tìm thấy đánh giá " + reviewId);
         if (!r.getCustomerId().equalsIgnoreCase(customerId)) {
-            throw new IllegalArgumentException("Đánh giá này không phải của bạn");
+            throw new ValidationException("Đánh giá này không phải của bạn");
         }
         return r;
     }
@@ -291,14 +333,14 @@ public class CustomerManager {
         CustomerReview r = requireOwnReview(reviewId, customerId);
         r.setRatingStars(ratingStars);
         r.setComment(comment);
-        saveAll();
+        saveReviews();
     }
 
     /** Khách xóa đánh giá của CHÍNH MÌNH. */
     public void deleteReview(String reviewId, String customerId) {
         CustomerReview r = requireOwnReview(reviewId, customerId);
         reviews.remove(r);
-        saveAll();
+        saveReviews();
     }
 
     public List<CustomerReview> getReviewsByCustomer(String customerId) {
@@ -332,16 +374,16 @@ public class CustomerManager {
     public String nextClaimId() {
         int max = 0;
         for (WarrantyClaim w : warrantyClaims) max = Math.max(max, suffixOf(w.getClaimId()));
-        return String.format("CLM%03d", max + 1);
+        return String.format("CLM%02d", max + 1);
     }
 
     private static String normalizeSerial(String serial) {
         if (serial == null || serial.trim().isEmpty()) {
-            throw new IllegalArgumentException("Số seri không được để trống");
+            throw new ValidationException("Số seri không được để trống");
         }
         String s = serial.trim().toUpperCase();
         if (s.contains("|") || s.matches(".*\\s.*")) {
-            throw new IllegalArgumentException("Số seri không được chứa khoảng trắng hoặc ký tự |");
+            throw new ValidationException("Số seri không được chứa khoảng trắng hoặc ký tự |");
         }
         return s;
     }
@@ -358,14 +400,14 @@ public class CustomerManager {
      * Tiếp nhận bảo hành. Menu lấy trước từ TV3 (người mua, mã sản phẩm, ngày bán) và TV2 (số tháng bảo hành).
      * Từ chối khi: không có bảo hành, seri đang có phiếu chưa đóng, hoặc đã hết hạn.
      */
-    public WarrantyClaim addClaim(String serial, String productId, String customerId, LocalDate saleDate, int warrantyMonths, String issue) {
+    public WarrantyClaim addClaim(String serial, String productId, String customerId, String issue, LocalDate saleDate, int warrantyMonths) {
         Customer c = requireCustomer(customerId);
         String sn = normalizeSerial(serial);
         if (warrantyMonths <= 0) {
-            throw new IllegalArgumentException("Sản phẩm này không có chế độ bảo hành");
+            throw new ValidationException("Sản phẩm này không có chế độ bảo hành");
         }
         if (hasOpenClaim(sn)) {
-            throw new IllegalArgumentException("Seri " + sn + " đang có phiếu bảo hành chưa hoàn tất");
+            throw new ValidationException("Seri " + sn + " đang có phiếu bảo hành chưa hoàn tất");
         }
         LocalDate today = LocalDate.now();
         WarrantyClaim w = new WarrantyClaim(nextClaimId(), c.getId(), productId, sn, issue, today, saleDate, warrantyMonths);
@@ -373,7 +415,7 @@ public class CustomerManager {
             throw new IllegalArgumentException("Seri " + sn + " đã hết hạn bảo hành từ ngày "+ DateUtil.format(w.getWarrantyExpiryDate()));
         }
         warrantyClaims.add(w);
-        saveAll();
+        saveClaims();
         return w;
     }
 
@@ -414,7 +456,7 @@ public class CustomerManager {
         WarrantyClaim w = findClaimById(claimId);
         if (w == null) return false;
         w.updateStatus(newStatus);
-        saveAll();
+        saveClaims();
         return true;
     }
 
@@ -424,7 +466,7 @@ public class CustomerManager {
         if (w == null) return false;
         if (!w.isClosed()) throw new IllegalArgumentException("Chỉ xóa được phiếu đã hoàn tất hoặc bị từ chối");
         warrantyClaims.remove(w);
-        saveAll();
+        saveClaims();
         return true;
     }
 }

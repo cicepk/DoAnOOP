@@ -130,9 +130,7 @@ public class WarrantyClaim {
     // ---------- File: 9 cột ----------
     // claimId|customerId|productId|serial|lỗi|ngày bán|số tháng BH|ngày tiếp nhận|trạng thái
     public String toFileLine() {
-        return String.join("|", claimId, customerId, productId, serialNumber, issueDescription,
-                DateUtil.format(saleDate), String.valueOf(warrantyMonths),
-                DateUtil.format(createdDate), claimStatus);
+        return String.join("|", claimId, customerId, productId, serialNumber, issueDescription,DateUtil.format(createdDate),claimStatus,DateUtil.format(saleDate), String.valueOf(warrantyMonths));
     }
 
     public static WarrantyClaim fromFileLine(String line) {
@@ -145,24 +143,24 @@ public class WarrantyClaim {
     // ---------- Hiển thị ----------
     /** Bảng cho nhân viên. */
     public static void printHeader() {
-        System.out.printf("%-8s %-8s %-8s %-12s %-19s %-19s %-10s %s%n",
+        System.out.printf("%-8s %-8s %-8s %-19s %-19s %-19s %-10s %s%n",
                 "Mã", "Khách", "SP", "Seri", "Ngày nhận", "Hạn BH", "Trạng thái", "Lỗi");
     }
 
     public void display() {
-        System.out.printf("%-8s %-8s %-8s %-12s %-19s %-19s %-10s %s%n",
+        System.out.printf("%-8s %-8s %-8s %-19s %-19s %-19s %-10s %s%n",
                 claimId, customerId, productId, serialNumber, DateUtil.format(createdDate),
                 DateUtil.format(getWarrantyExpiryDate()), getStatusDisplay(), issueDescription);
     }
 
     /** Bảng cho khách (kèm ngày dự kiến hoàn thành ở dòng dưới). */
     public static void printCustomerHeader() {
-        System.out.printf("%-8s %-12s %-8s %-19s %-10s %s%n",
+        System.out.printf("%-8s %-19s %-8s %-19s %-10s %s%n",
                 "Mã", "Seri", "SP", "Ngày gửi", "Trạng thái", "Lỗi");
     }
 
     public void displayForCustomer() {
-        System.out.printf("%-8s %-12s %-8s %-19s %-10s %s%n",
+        System.out.printf("%-8s %-19s %-8s %-19s %-10s %s%n",
                 claimId, serialNumber, productId, DateUtil.format(createdDate), getStatusDisplay(), issueDescription);
         System.out.println("         -> " + getExpectedCompletionText());
     }
