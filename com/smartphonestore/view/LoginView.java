@@ -2,6 +2,7 @@ package com.smartphonestore.view;
 
 import com.smartphonestore.manager.AccountManager;
 import com.smartphonestore.manager.EmployeeManager;
+import com.smartphonestore.manager.ProductManager;
 import com.smartphonestore.model.auth.Account;
 import com.smartphonestore.model.auth.Employee;
 import com.smartphonestore.model.enums.Role;
@@ -10,10 +11,12 @@ import com.smartphonestore.util.InputHelper;
 public class LoginView {
     private final AccountManager accountManager;
     private final EmployeeManager employeeManager;
+    private final ProductManager productManager;
 
-    public LoginView(AccountManager accountManager, EmployeeManager employeeManager) {
+    public LoginView(AccountManager accountManager, EmployeeManager employeeManager, ProductManager productManager) {
         this.accountManager = accountManager;
         this.employeeManager = employeeManager;
+        this.productManager = productManager;
     }
 
     public void start() {
@@ -116,7 +119,7 @@ public class LoginView {
                 new AdminMenu(accountManager, employeeManager, acc).displayMenu();
                 break;
             case WAREHOUSE:
-                new WarehouseMenu().displayMenu(); // TV2 - hàm không static nên phải new
+                new WarehouseMenu(productManager).displayMenu(); // TV2 - dùng chung ProductManager tạo ở Main
                 break;
             case SALES:
                 // TV3: thay bằng new SalesMenu(...).displayMenu() khi TV3 làm xong
