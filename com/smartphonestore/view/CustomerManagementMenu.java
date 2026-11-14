@@ -1,10 +1,10 @@
 package com.smartphonestore.view;
 
+import com.smartphonestore.exception.ValidationException;
 import com.smartphonestore.manager.AccountManager;
 import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.manager.ProductManager;
-import com.smartphonestore.model.product.Phone;
 import com.smartphonestore.model.product.ProductDetail;
 import com.smartphonestore.model.product.Product;
 import com.smartphonestore.model.customer.*;
@@ -41,7 +41,7 @@ public class CustomerManagementMenu {
     public void show() {
         while (true) {
             printMenu();
-            int choice = InputHelper.readInt("Chọn: ", 0, 12);
+            int choice = InputHelper.readInt("Chọn: ", 0, 11);
             if (choice == 0) return;
             try {
                 switch (choice) {
@@ -53,10 +53,9 @@ public class CustomerManagementMenu {
                     case 6: checkRank(); break;
                     case 7: calcVipDiscount(); break;
                     case 8: upgradeVip(); break;
-                    case 9: issueAccount(); break;
-                    case 10: viewReviews(); break;
-                    case 11: receiveClaim(); break;
-                    case 12: claimMenu(); break;
+                    case 9: viewReviews(); break;
+                    case 10: receiveClaim(); break;
+                    case 11: claimMenu(); break;
                     default: break;
                 }
             } catch (IllegalArgumentException e) {
@@ -67,24 +66,23 @@ public class CustomerManagementMenu {
 
     private void printMenu() {
         System.out.println("\n========== QUẢN LÝ KHÁCH HÀNG (" + role.getDisplayName() + ") ==========");
-        System.out.println("[1]  Xem danh sách khách hàng");
-        System.out.println("[2]  Xem chi tiết một khách theo mã");
-        System.out.println("[3]  Thêm khách hàng mới");
-        System.out.println("[4]  Xóa khách hàng (chỉ Admin)");
-        System.out.println("[5]  Tìm kiếm khách theo tên / SĐT");
-        System.out.println("[6]  Tra cứu hạng & tiến trình lên VIP");
-        System.out.println("[7]  Tính ưu đãi VIP cho một đơn hàng");
-        System.out.println("[8]  Nâng khách lên VIP");
-        System.out.println("[9]  Cấp tài khoản đăng nhập cho khách");
-        System.out.println("[10] Xem đánh giá (theo khách / theo sản phẩm)");
-        System.out.println("[11] Tiếp nhận bảo hành (nhập số seri)");
-        System.out.println("[12] Tra cứu & xử lý phiếu bảo hành");
-        System.out.println("[0]  Quay lại menu trước");
+        System.out.println("[1] Xem danh sách khách hàng");
+        System.out.println("[2] Xem chi tiết một khách theo mã");
+        System.out.println("[3] Thêm khách hàng mới");
+        System.out.println("[4] Xóa khách hàng (chỉ Admin)");
+        System.out.println("[5] Tìm kiếm khách theo tên / SĐT");
+        System.out.println("[6] Tra cứu hạng & tiến trình lên VIP");
+        System.out.println("[7] Tính ưu đãi VIP cho một đơn hàng");
+        System.out.println("[8] Nâng khách lên VIP");
+        System.out.println("[9] Xem đánh giá (theo khách / theo sản phẩm)");
+        System.out.println("[10] Tiếp nhận bảo hành (nhập số seri)");
+        System.out.println("[11] Tra cứu & xử lý phiếu bảo hành");
+        System.out.println("[0] Quay lại menu trước");
     }
 
     // ---------- Tiện ích ----------
     private Customer askCustomer() {
-        String id = InputHelper.readString("Nhập mã khách (ví dụ CUS001): ");
+        String id = InputHelper.readString("Nhập mã khách (ví dụ CUS01): ");
         Customer c = manager.findById(id);
         if (c == null) throw new IllegalArgumentException("Không tìm thấy khách hàng " + id);
         return c;
@@ -123,8 +121,17 @@ public class CustomerManagementMenu {
         String email = InputHelper.readString("Email: ");
         Customer c = manager.addCustomer(name, phone, email);
         System.out.println("Đã thêm khách hàng, mã: " + c.getId());
-        if (InputHelper.readInt("Cấp tài khoản đăng nhập ngay? [1] Có  [2] Để sau: ", 1, 2) == 1) {
-            createAccountFor(c);
+        while (true) {
+            try {
+                createAccountFor(c);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("(!) " + e.getMessage());
+                if (!confirm("Nhập lại?")) {
+                    System.out.println("Khách đã được thêm nhưng chưa có tài khoản.");
+                    break;
+                }
+            }
         }
     }
 
@@ -182,10 +189,6 @@ public class CustomerManagementMenu {
     }
 
     // ---------- Tài khoản ----------
-    private void issueAccount() {
-        createAccountFor(askCustomer());
-    }
-
     private void createAccountFor(Customer c) {
         System.out.println("Cấp tài khoản cho " + c.getId() + " - " + c.getFullName());
         String username = InputHelper.readString("Tên đăng nhập (4-20 ký tự chữ, số, _ hoặc .): ");
@@ -224,38 +227,46 @@ public class CustomerManagementMenu {
         String serial = InputHelper.readString("Số seri máy: ").trim().toUpperCase();
         String buyerId = salesManager.getBuyerIdBySerial(serial);              // TV3
         if (buyerId == null) {
-            throw new IllegalArgumentException("Seri này chưa bán, chưa thanh toán, đã hủy hoặc hóa đơn không có mã khách");
+            throw new ValidationException("Seri này chưa bán, chưa thanh toán, đã hủy hoặc hóa đơn không có mã khách");
         }
         ProductDetail detail = productManager.findDetailBySerial(serial);
 
         if (detail == null) {
-            throw new IllegalArgumentException("Không có số seri " + serial + " trong kho");
+            throw new ValidationException("Không có số seri " + serial + " trong kho");
         }
 
         // Chỉ tiếp nhận bảo hành nếu máy đã bán
         if (!ProductManager.SOLD.equals(detail.getStatus())) {
-            throw new IllegalArgumentException(
+            throw new ValidationException(
                 "Seri đang ở trạng thái " + detail.getStatus() + ", không nhận bảo hành"
             );
         }
         String productId = detail.getProductId();
         LocalDate saleDate = DateUtil.parse(salesManager.getSaleDateBySerial(serial));   // TV3
         Product product = productManager.findByID(productId);
+        if (product == null) {
+            throw new ValidationException("Không tìm thấy sản phẩm " + productId + " của số seri " + serial);
+        }
         int months =product.getWarrantyMonths();             
         Customer buyer = manager.findById(buyerId);
         if (buyer == null) {
-            throw new IllegalArgumentException("Người mua " + buyerId + " chưa có hồ sơ khách hàng");
+            throw new ValidationException("Người mua " + buyerId + " chưa có hồ sơ khách hàng");
         }
         System.out.println("Người mua : " + buyer.getId() + " - " + buyer.getFullName());
         System.out.println("Sản phẩm  : " + productId + " | bán ngày " + DateUtil.format(saleDate)
                 + " | bảo hành " + months + " tháng");
         String issue = InputHelper.readString("Mô tả lỗi: ");
-        WarrantyClaim w = manager.addClaim(serial, productId, buyer.getId(), issue, saleDate, months);
-        boolean changed=productManager.setWarrantyStatus(serial, true); // SOLD -> WARRANTY
-        if (!changed) {
-            System.out.println("Không thể chuyển trạng thái máy sang WARRANTY.");
-            return;
+        if (!productManager.setWarrantyStatus(serial, true)) {            // SOLD -> WARRANTY
+            throw new ValidationException("Không chuyển được seri " + serial + " sang WARRANTY");
         }
+        WarrantyClaim w;
+        try{
+         w= manager.addClaim(serial, productId, buyer.getId(), issue, saleDate, months);
+        } catch(RuntimeException e) {
+            productManager.setWarrantyStatus(serial, false);              // hoàn tác: WARRANTY -> SOLD
+            throw e;
+        }
+
         System.out.println("Đã tiếp nhận phiếu " + w.getClaimId() + ". Còn bảo hành đến "
                 + DateUtil.format(w.getWarrantyExpiryDate()) + ". " + w.getExpectedCompletionText() + ".");
     }
@@ -292,7 +303,7 @@ public class CustomerManagementMenu {
     }
 
     private void searchClaim() {
-        String key = InputHelper.readString("Nhập mã phiếu (CLM001) hoặc số seri: ");
+        String key = InputHelper.readString("Nhập mã phiếu (CLM01) hoặc số seri: ");
         WarrantyClaim w = manager.findClaimById(key);
         if (w != null) {
             WarrantyClaim.printHeader();

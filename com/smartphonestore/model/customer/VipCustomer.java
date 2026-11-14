@@ -1,6 +1,6 @@
 package com.smartphonestore.model.customer;
 
-public class VipCustomer extends Customer implements ILoyaltyRankable {
+public class VipCustomer extends Customer {
     public static final double DEFAULT_DISCOUNT_RATE = 0.05;   // 5%
     private double vipDiscountRate;
 

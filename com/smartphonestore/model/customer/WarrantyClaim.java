@@ -2,6 +2,7 @@ package com.smartphonestore.model.customer;
 
 import com.smartphonestore.util.DateUtil;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -22,14 +23,14 @@ public class WarrantyClaim {
     private final String productId;
     private final String serialNumber;
     private String issueDescription;
-    private final LocalDate createdDate;    // ngày tiếp nhận, lấy lúc tiếp nhận
+    private final LocalDateTime createdDate;    // ngày tiếp nhận, lấy lúc tiếp nhận
      private String claimStatus;             // TIEP_NHAN, DANG_SUA, HOAN_TAT, TU_CHOI
     private final LocalDate saleDate;       // ngày bán, lấy từ hóa đơn lúc tiếp nhận
     private final int warrantyMonths;       // số tháng bảo hành, lấy lúc tiếp nhận
               
     /** Constructor đầy đủ, dùng khi đọc từ file. */
     public WarrantyClaim(String claimId, String customerId, String productId, String serialNumber,
-                         String issueDescription,LocalDate createdDate,String claimStatus, LocalDate saleDate, int warrantyMonths
+                         String issueDescription,LocalDateTime createdDate,String claimStatus, LocalDate saleDate, int warrantyMonths
                           ) {
         if (isBlank(claimId) || isBlank(customerId) || isBlank(productId)) {
             throw new IllegalArgumentException("Thiếu mã phiếu, mã khách hoặc mã sản phẩm");
@@ -41,7 +42,7 @@ public class WarrantyClaim {
             throw new IllegalArgumentException("Thiếu ngày bán hoặc ngày tiếp nhận");
         }
         if (warrantyMonths < 0) throw new IllegalArgumentException("Số tháng bảo hành không được âm");
-        if (createdDate.isBefore(saleDate)) {
+        if (createdDate.toLocalDate().isBefore(saleDate)) {
             throw new IllegalArgumentException("Ngày tiếp nhận không thể trước ngày bán");
         }
         this.claimId = claimId;
@@ -58,7 +59,7 @@ public class WarrantyClaim {
 
     /** Constructor tạo phiếu mới: trạng thái ban đầu là TIEP_NHAN. */
     public WarrantyClaim(String claimId, String customerId, String productId, String serialNumber,
-                         String issueDescription, LocalDate createdDate, LocalDate saleDate, int warrantyMonths ) {
+                         String issueDescription, LocalDateTime createdDate, LocalDate saleDate, int warrantyMonths ) {
         this(claimId, customerId, productId, serialNumber, issueDescription,
                 createdDate, TIEP_NHAN, saleDate, warrantyMonths);
     }
@@ -87,7 +88,7 @@ public class WarrantyClaim {
     }
 
     public LocalDate getExpectedCompletionDate() {
-        return createdDate.plusDays(PROCESSING_DAYS);
+        return createdDate.toLocalDate().plusDays(PROCESSING_DAYS);
     }
 
     /** Câu hiển thị cho khách ở mục "Phiếu bảo hành của tôi". */
@@ -130,13 +131,13 @@ public class WarrantyClaim {
     // ---------- File: 9 cột ----------
     // claimId|customerId|productId|serial|lỗi|ngày bán|số tháng BH|ngày tiếp nhận|trạng thái
     public String toFileLine() {
-        return String.join("|", claimId, customerId, productId, serialNumber, issueDescription,DateUtil.format(createdDate),claimStatus,DateUtil.format(saleDate), String.valueOf(warrantyMonths));
+        return String.join("|", claimId, customerId, productId, serialNumber, issueDescription,DateUtil.formatDateTime(createdDate),claimStatus,DateUtil.format(saleDate), String.valueOf(warrantyMonths));
     }
 
     public static WarrantyClaim fromFileLine(String line) {
         String[] f = line.split("\\|", -1);
         if (f.length < 9) throw new IllegalArgumentException("Dòng bảo hành phải có 9 cột (có thể là dữ liệu cũ)");
-        return new WarrantyClaim(f[0], f[1], f[2], f[3], f[4], DateUtil.parse(f[5]),f[6],
+        return new WarrantyClaim(f[0], f[1], f[2], f[3], f[4], DateUtil.parseDateTime(f[5]),f[6],
                 DateUtil.parse(f[7]), Integer.parseInt(f[8]));
     }
 
@@ -149,7 +150,7 @@ public class WarrantyClaim {
 
     public void display() {
         System.out.printf("%-8s %-8s %-8s %-19s %-19s %-19s %-10s %s%n",
-                claimId, customerId, productId, serialNumber, DateUtil.format(createdDate),
+                claimId, customerId, productId, serialNumber, DateUtil.formatDateTime(createdDate),
                 DateUtil.format(getWarrantyExpiryDate()), getStatusDisplay(), issueDescription);
     }
 
@@ -161,7 +162,7 @@ public class WarrantyClaim {
 
     public void displayForCustomer() {
         System.out.printf("%-8s %-19s %-8s %-19s %-10s %s%n",
-                claimId, serialNumber, productId, DateUtil.format(createdDate), getStatusDisplay(), issueDescription);
+                claimId, serialNumber, productId, DateUtil.formatDateTime(createdDate), getStatusDisplay(), issueDescription);
         System.out.println("         -> " + getExpectedCompletionText());
     }
 
@@ -172,6 +173,6 @@ public class WarrantyClaim {
     public String getIssueDescription() { return issueDescription; }
     public LocalDate getSaleDate() { return saleDate; }
     public int getWarrantyMonths() { return warrantyMonths; }
-    public LocalDate getCreatedDate() { return createdDate; }
+    public LocalDateTime getCreatedDate() { return createdDate; }
     public String getClaimStatus() { return claimStatus; }
 }
