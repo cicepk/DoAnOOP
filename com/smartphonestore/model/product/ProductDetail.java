@@ -10,7 +10,7 @@ public class ProductDetail {
     private String productId;     // Khóa ngoại trỏ đến Product (PRD01, PRD02...)
     private String productName;   // Tên sản phẩm cụ thể
     private String serialNumber;  // Khóa chính: Số Seri / IMEI duy nhất cho từng máy
-    private String importDate;    // Ngày nhập kho (YYYY-MM-DD)
+    private String importDate;    // Ngày giờ nhập kho (dd/MM/yyyy HH:mm:ss)
     private double importPrice;   // Giá nhập hàng từ nhà cung cấp (VND)
     private String supplier;      // Tên nhà cung cấp (FPT, Viettel, Digiworld...)
     private String status;        // Trạng thái: IN_STOCK (Trong kho), SOLD (Đã bán), WARRANTY (Bảo hành)
@@ -41,7 +41,7 @@ public class ProductDetail {
     public void displayRow(String brand) {
         String statusVi = "IN_STOCK".equalsIgnoreCase(status) ? "Trong kho" :
                          ("SOLD".equalsIgnoreCase(status) ? "Da ban" : "Bao hanh");
-        System.out.printf(" %-7s │ %-26s │ %-8s │ %-18s │ %-10s │ %,12.0f d │ %-14s │ %-9s%n",
+        System.out.printf(" %-7s │ %-26s │ %-8s │ %-18s │ %-19s │ %,12.0f d │ %-14s │ %-9s%n",
                 productId,
                 productName != null ? (productName.length() > 26 ? productName.substring(0, 23) + "..." : productName) : "N/A",
                 brand != null ? brand : "N/A",
