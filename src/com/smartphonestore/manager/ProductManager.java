@@ -1,6 +1,7 @@
 package com.smartphonestore.manager;
 
 import com.smartphonestore.model.product.*;
+import com.smartphonestore.util.FileIO;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -210,18 +211,8 @@ public class ProductManager {
         return saveDetailsToFile();
     }
 
-    // Nội bộ: Nhập hàng tăng số lượng tồn kho (chỉ dùng nội bộ trong manager/menu)
-    private boolean StockIn(String id, int quantity) {
-        Product p = findByID(id);
-        if (p != null && quantity > 0) {
-            p.increaseStock(quantity);
-            return saveToFile();
-        }
-        return false;
-    }
-
-    // Nội bộ: Giảm tồn kho (chỉ dùng nội bộ khi sellSerial)
-    public boolean decreaseStock(String id, int quantity) {
+    // Nội bộ: Giảm tồn kho (chỉ dùng nội bộ nếu cần)
+    private boolean decreaseStock(String id, int quantity) {
         Product p = findByID(id);
         if (p != null && quantity > 0) {
             boolean ok = p.decreaseStock(quantity);
@@ -343,158 +334,128 @@ public class ProductManager {
     // Nạp dữ liệu từ products.txt
     public void loadFromFile() {
         products.clear();
-        Path path = Paths.get(filePath);
-        if (!Files.exists(path)) return;
+        List<String> lines = FileIO.readLines(filePath);
+        for (String line : lines) {
+            try {
+                String[] parts = line.split("\\|", -1);
+                if (parts.length >= 8) {
+                    String id = parts[0].trim();
+                    String name = parts[1].trim();
+                    String brand = parts[2].trim();
+                    double price = Double.parseDouble(parts[3].trim());
+                    int stock = Integer.parseInt(parts[4].trim());
+                    String type = parts[5].trim().toUpperCase();
+                    int threshold = Integer.parseInt(parts[6].trim());
+                    String extra = parts[7].trim();
 
-        try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.replace("\uFEFF", "").trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
-
-                try {
-                    String[] parts = line.split("\\|", -1);
-                    if (parts.length >= 8) {
-                        String id = parts[0].trim();
-                        String name = parts[1].trim();
-                        String brand = parts[2].trim();
-                        double price = Double.parseDouble(parts[3].trim());
-                        int stock = Integer.parseInt(parts[4].trim());
-                        String type = parts[5].trim().toUpperCase();
-                        int threshold = Integer.parseInt(parts[6].trim());
-                        String extra = parts[7].trim();
-
-                        switch (type) {
-                            case "SMARTPHONE": {
-                                int storage = Integer.parseInt(extra);
-                                String os = brand.equalsIgnoreCase("Apple") ? "iOS" : "Android";
-                                products.add(new Smartphone(id, name, brand, price, stock, threshold, os, storage));
-                                break;
-                            }
-                            case "FEATUREPHONE": {
-                                int battery = Integer.parseInt(extra);
-                                products.add(new Featurephone(id, name, brand, price, stock, threshold, "KaiOS", battery));
-                                break;
-                            }
-                            case "ACCESSORY": {
-                                products.add(new Accessory(id, name, brand, price, stock, threshold, extra));
-                                break;
-                            }
+                    switch (type) {
+                        case "SMARTPHONE": {
+                            int storage = Integer.parseInt(extra);
+                            String os = brand.equalsIgnoreCase("Apple") ? "iOS" : "Android";
+                            products.add(new Smartphone(id, name, brand, price, stock, threshold, os, storage));
+                            break;
+                        }
+                        case "FEATUREPHONE": {
+                            int battery = Integer.parseInt(extra);
+                            products.add(new Featurephone(id, name, brand, price, stock, threshold, "KaiOS", battery));
+                            break;
+                        }
+                        case "ACCESSORY": {
+                            products.add(new Accessory(id, name, brand, price, stock, threshold, extra));
+                            break;
                         }
                     }
-                } catch (Exception ex) {
-                    System.err.println("Bo qua dong loi trong products.txt: " + ex.getMessage());
                 }
+            } catch (Exception ex) {
+                System.err.println("Bo qua dong loi trong products.txt: " + ex.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Loi nap file products.txt: " + e.getMessage());
         }
     }
 
     // Ghi toàn bộ danh sách sản phẩm xuống products.txt
     public boolean saveToFile() {
-        try {
-            Path path = Paths.get(filePath);
-            if (products.isEmpty() && Files.exists(path) && Files.size(path) > 200) {
-                System.err.println("[CANH BAO]: Danh sach san pham trong bo nho rong, huy ghi de de bao ve file products.txt!");
-                return false;
-            }
-            if (path.getParent() != null && !Files.exists(path.getParent())) {
-                Files.createDirectories(path.getParent());
-            }
-
-            // Sắp xếp sản phẩm theo mã ID (PRD01, PRD02...)
-            products.sort((p1, p2) -> p1.getId().compareToIgnoreCase(p2.getId()));
-
-            List<String> lines = new ArrayList<>();
-            lines.add("# Format: id|name|brand|price|stockQuantity|productType(SMARTPHONE/FEATUREPHONE/ACCESSORY)|minThreshold|extraValue(Storage/BatteryDays/AccessoryType)");
-            for (Product p : products) {
-                lines.add(p.toFileString());
-            }
-            Files.write(path, lines, StandardCharsets.UTF_8);
-            return true;
-        } catch (Exception e) {
-            System.err.println("Loi luu file products.txt: " + e.getMessage());
-            return false;
+        Path path = Paths.get(filePath);
+        if (products.isEmpty() && Files.exists(path)) {
+            try {
+                if (Files.size(path) > 200) {
+                    System.err.println("[CANH BAO]: Danh sach san pham trong bo nho rong, huy ghi de de bao ve file products.txt!");
+                    return false;
+                }
+            } catch (IOException ignored) {}
         }
+
+        // Sắp xếp sản phẩm theo mã ID (PRD01, PRD02...)
+        products.sort((p1, p2) -> p1.getId().compareToIgnoreCase(p2.getId()));
+
+        List<String> lines = new ArrayList<>();
+        // KHÔNG tự thêm dòng "# Format..." vì FileIO.writeLines tự động bảo lưu dòng chú thích # có sẵn
+        for (Product p : products) {
+            lines.add(p.toFileString());
+        }
+        return FileIO.writeLines(filePath, lines);
     }
 
     // Nạp dữ liệu từ product_details.txt
     public void loadDetailsFromFile() {
         productDetails.clear();
-        Path path = Paths.get(detailsFilePath);
-        if (!Files.exists(path)) return;
+        List<String> lines = FileIO.readLines(detailsFilePath);
+        for (String line : lines) {
+            try {
+                // Format mới: productId|productName|serialNumber|importDate|importPrice|supplier|status (7 cột)
+                String[] parts = line.split("\\|", -1);
+                if (parts.length >= 7) {
+                    String productId = parts[0].trim();
+                    String productName = parts[1].trim();
+                    String serialNumber = parts[2].trim();
+                    String importDate = parts[3].trim();
+                    double importPrice = Double.parseDouble(parts[4].trim());
+                    String supplier = parts[5].trim();
+                    String status = parts[6].trim();
 
-        try (BufferedReader br = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.replace("\uFEFF", "").trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
+                    productDetails.add(new ProductDetail(productId, productName, serialNumber, importDate, importPrice, supplier, status));
+                } else if (parts.length >= 6) {
+                    // Tương thích ngược với format 6 cột cũ
+                    String productId = parts[0].trim();
+                    String serialNumber = parts[1].trim();
+                    String importDate = parts[2].trim();
+                    double importPrice = Double.parseDouble(parts[3].trim());
+                    String supplier = parts[4].trim();
+                    String status = parts[5].trim();
+                    Product p = findByID(productId);
+                    String pName = p != null ? p.getName() : "San pham " + productId;
 
-                try {
-                    // Format mới: productId|productName|serialNumber|importDate|importPrice|supplier|status (7 cột)
-                    String[] parts = line.split("\\|", -1);
-                    if (parts.length >= 7) {
-                        String productId = parts[0].trim();
-                        String productName = parts[1].trim();
-                        String serialNumber = parts[2].trim();
-                        String importDate = parts[3].trim();
-                        double importPrice = Double.parseDouble(parts[4].trim());
-                        String supplier = parts[5].trim();
-                        String status = parts[6].trim();
-
-                        productDetails.add(new ProductDetail(productId, productName, serialNumber, importDate, importPrice, supplier, status));
-                    } else if (parts.length >= 6) {
-                        // Tương thích ngược với format 6 cột cũ
-                        String productId = parts[0].trim();
-                        String serialNumber = parts[1].trim();
-                        String importDate = parts[2].trim();
-                        double importPrice = Double.parseDouble(parts[3].trim());
-                        String supplier = parts[4].trim();
-                        String status = parts[5].trim();
-                        Product p = findByID(productId);
-                        String pName = p != null ? p.getName() : "San pham " + productId;
-
-                        productDetails.add(new ProductDetail(productId, pName, serialNumber, importDate, importPrice, supplier, status));
-                    }
-                } catch (Exception ex) {
-                    System.err.println("Bo qua dong loi trong product_details.txt: " + ex.getMessage());
+                    productDetails.add(new ProductDetail(productId, pName, serialNumber, importDate, importPrice, supplier, status));
                 }
+            } catch (Exception ex) {
+                System.err.println("Bo qua dong loi trong product_details.txt: " + ex.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Loi nap file product_details.txt: " + e.getMessage());
         }
     }
 
     // Ghi toàn bộ chi tiết máy xuống product_details.txt
     public boolean saveDetailsToFile() {
-        try {
-            Path path = Paths.get(detailsFilePath);
-            if (productDetails.isEmpty() && Files.exists(path) && Files.size(path) > 200) {
-                System.err.println("[CANH BAO]: Danh sach chi tiet trong bo nho rong, huy ghi de de bao ve file product_details.txt!");
-                return false;
-            }
-            if (path.getParent() != null && !Files.exists(path.getParent())) {
-                Files.createDirectories(path.getParent());
-            }
-
-            // Sắp xếp chi tiết máy gom theo mã sản phẩm (PRD01, PRD02...) rồi đến số Seri
-            productDetails.sort((d1, d2) -> {
-                int cmp = d1.getProductId().compareToIgnoreCase(d2.getProductId());
-                if (cmp != 0) return cmp;
-                return d1.getSerialNumber().compareToIgnoreCase(d2.getSerialNumber());
-            });
-
-            List<String> lines = new ArrayList<>();
-            lines.add("# Format: productId|productName|serialNumber|importDate|importPrice|supplier|status");
-            for (ProductDetail d : productDetails) {
-                lines.add(d.toFileString());
-            }
-            Files.write(path, lines, StandardCharsets.UTF_8);
-            return true;
-        } catch (Exception e) {
-            System.err.println("Loi luu file product_details.txt: " + e.getMessage());
-            return false;
+        Path path = Paths.get(detailsFilePath);
+        if (productDetails.isEmpty() && Files.exists(path)) {
+            try {
+                if (Files.size(path) > 200) {
+                    System.err.println("[CANH BAO]: Danh sach chi tiet trong bo nho rong, huy ghi de de bao ve file product_details.txt!");
+                    return false;
+                }
+            } catch (IOException ignored) {}
         }
+
+        // Sắp xếp chi tiết máy gom theo mã sản phẩm (PRD01, PRD02...) rồi đến số Seri
+        productDetails.sort((d1, d2) -> {
+            int cmp = d1.getProductId().compareToIgnoreCase(d2.getProductId());
+            if (cmp != 0) return cmp;
+            return d1.getSerialNumber().compareToIgnoreCase(d2.getSerialNumber());
+        });
+
+        List<String> lines = new ArrayList<>();
+        // KHÔNG tự thêm dòng "# Format..." vì FileIO.writeLines tự động bảo lưu dòng chú thích # có sẵn
+        for (ProductDetail d : productDetails) {
+            lines.add(d.toFileString());
+        }
+        return FileIO.writeLines(detailsFilePath, lines);
     }
 }
