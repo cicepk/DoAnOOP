@@ -15,6 +15,12 @@ public class WarehouseMenu {
         this.prd = prd;
     }
 
+    // Hàm main để chạy test độc lập riêng Module Kho (TV2) trên nhánh phat
+    public static void main(String[] args) {
+        ProductManager manager = new ProductManager();
+        new WarehouseMenu(manager).displayMenu();
+    }
+
     public void displayMenu() {
         boolean running = true;
         while (running) {

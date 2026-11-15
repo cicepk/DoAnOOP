@@ -4,10 +4,14 @@ import java.util.Scanner;
 public class InputHelper {
     private static final Scanner scanner = new Scanner(System.in);
 
+    private static String getNextLine() {
+        return scanner.nextLine().replace("\uFEFF", "").trim();
+    }
+
     public static String readString(String text) {
         while (true) {
             System.out.print(text);
-            String input = scanner.nextLine().trim();
+            String input = getNextLine();
             if (!input.isEmpty()) return input;
             System.out.println("(!) Dữ liệu không được để trống. Vui lòng nhập lại!");
         }
@@ -16,7 +20,7 @@ public class InputHelper {
         while(true) {
             System.out.print(text);
             try {
-                int value = Integer.parseInt(scanner.nextLine().trim());
+                int value = Integer.parseInt(getNextLine());
                 if (value >= min && value <= max) return value;
                 System.out.printf("(!) Vui lòng nhập số trong khoảng [%d - %d].%n", min, max);
             } catch (NumberFormatException e) {
@@ -28,7 +32,7 @@ public class InputHelper {
         while (true) {
             System.out.print(text);
             try {
-                double value = Double.parseDouble(scanner.nextLine().trim());
+                double value = Double.parseDouble(getNextLine());
                 if (value >= min) return value;
                 System.out.printf("(!) Giá trị phải >= %.0f.%n", min);
             } catch (NumberFormatException e) {
@@ -48,7 +52,7 @@ public class InputHelper {
     public static boolean readYesNo(String text) {
         while (true) {
             System.out.print(text);
-            String input = scanner.nextLine().trim();
+            String input = getNextLine();
             if (input.equalsIgnoreCase("Y")) return true;
             if (input.equalsIgnoreCase("N")) return false;
             System.out.println("(!) Vui lòng nhập Y hoặc N!");
@@ -58,6 +62,6 @@ public class InputHelper {
     // Đọc chuỗi tùy chọn (cho phép nhấn Enter để bỏ qua / nhận giá trị mặc định)
     public static String readOptionalString(String text) {
         System.out.print(text);
-        return scanner.nextLine().trim();
+        return getNextLine();
     }
 }
