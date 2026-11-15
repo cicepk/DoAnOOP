@@ -16,8 +16,8 @@ public class Featurephone extends Phone {
     // phương thức riêng: bật/tắt phím SOS
     public void toggleEmergencySOS() {
         this.sosModeEnable = !this.sosModeEnable;
-        System.out.println("SOS che do khan cap cua may " + getName() +
-                " hien dang " + (sosModeEnable ? "BAT" : "TAT"));
+        System.out.println("Chế độ khẩn cấp SOS của máy " + getName() +
+                " hiện đang " + (sosModeEnable ? "BẬT" : "TẮT"));
     }
 
     @Override 
@@ -28,10 +28,10 @@ public class Featurephone extends Phone {
 
     @Override
     public void displayInfo() {
-        System.out.printf("[PHO THONG]  ID: %-6s | Ten: %-26s | Hang: %-10s | Gia: %,12.0f d | Ton: %-3d | Pin cho: %2d ngay | Phim SOS: %-3s%s%n",
+        System.out.printf("[PHỔ THÔNG]  ID: %-6s | Tên: %-26s | Hãng: %-10s | Giá: %,12.0f đ | Tồn: %-3d | Pin chờ: %2d ngày | Phím SOS: %-3s%s%n",
                 getId(), getName(), getBrand(), getPrice(), getStockQuantity(), batteryLifeDays,
-                (sosModeEnable ? "BAT" : "TAT"),
-                isLowStock() ? " [SAP HET HANG]" : "");
+                (sosModeEnable ? "BẬT" : "TẮT"),
+                isLowStock() ? " [SẮP HẾT HÀNG]" : "");
     }
 
     public int getBatteryLifeDays() {
@@ -40,7 +40,7 @@ public class Featurephone extends Phone {
 
     public void setBatteryLifeDays(int batteryLifeDays) {
         if (batteryLifeDays <= 0) {
-            throw new ValidationException("[LOI]: Thoi luong pin cho phai lon hon 0 ngay!");
+            throw new ValidationException("[LỖI]: Thời lượng pin chờ phải lớn hơn 0 ngày!");
         }
         this.batteryLifeDays = batteryLifeDays;
     }

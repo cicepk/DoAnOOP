@@ -131,9 +131,9 @@ public class ProductManager {
         for (ProductDetail d : productDetails) {
             if (d.getProductId().equalsIgnoreCase(pid)) {
                 if (SOLD.equalsIgnoreCase(d.getStatus()) || WARRANTY.equalsIgnoreCase(d.getStatus())) {
-                    System.out.printf("[!] KHONG THE XOA: San pham %s dang co con may o trang thai '%s'!%n",
+                    System.out.printf("[!] KHÔNG THỂ XÓA: Sản phẩm %s đang có con máy ở trạng thái '%s'!%n",
                             pid, d.getStatus());
-                    System.out.println("    (Xoa se lam mat du lieu lich su ben Hoa don ban hang hoac Phieu bao hanh).");
+                    System.out.println("    (Xóa sẽ làm mất dữ liệu lịch sử bên Hóa đơn bán hàng hoặc Phiếu bảo hành).");
                     return false;
                 }
             }
@@ -174,10 +174,10 @@ public class ProductManager {
     // Trả về null nếu bán được, ngược lại trả về câu báo lỗi
     public String checkSellable(String serial) {
         ProductDetail d = findDetailBySerial(serial);
-        if (d == null) return "Khong co serial " + serial + " trong kho";
-        if (!IN_STOCK.equals(d.getStatus())) return "Serial " + serial + " dang o trang thai " + d.getStatus();
-        if (findByID(d.getProductId()) == null) return "San pham " + d.getProductId() + " khong con trong danh muc";
-        return null;
+        if (d == null) return "Không có serial " + serial + " trong kho";
+        if (!IN_STOCK.equals(d.getStatus())) return "Serial " + serial + " đang ở trạng thái " + d.getStatus();
+        if (findByID(d.getProductId()) == null) return "Sản phẩm " + d.getProductId() + " không còn trong danh mục";
+        return null;// nếu bán đc trả null, còn ko thì trả về trạng thái
     }
 
     // TV3 gọi khi lập hóa đơn: IN_STOCK -> SOLD, tồn kho -1, lưu cả 2 file
@@ -367,7 +367,7 @@ public class ProductManager {
                     }
                 }
             } catch (Exception ex) {
-                System.err.println("Bo qua dong loi trong products.txt: " + ex.getMessage());
+                System.err.println("Bỏ qua dòng lỗi trong products.txt: " + ex.getMessage());
             }
         }
     }
@@ -378,7 +378,7 @@ public class ProductManager {
         if (products.isEmpty() && Files.exists(path)) {
             try {
                 if (Files.size(path) > 200) {
-                    System.err.println("[CANH BAO]: Danh sach san pham trong bo nho rong, huy ghi de de bao ve file products.txt!");
+                    System.err.println("[CẢNH BÁO]: Danh sách sản phẩm trong bộ nhớ rỗng, hủy ghi đè để bảo vệ file products.txt!");
                     return false;
                 }
             } catch (IOException ignored) {}
@@ -422,12 +422,12 @@ public class ProductManager {
                     String supplier = parts[4].trim();
                     String status = parts[5].trim();
                     Product p = findByID(productId);
-                    String pName = p != null ? p.getName() : "San pham " + productId;
+                    String pName = p != null ? p.getName() : "Sản phẩm " + productId;
 
                     productDetails.add(new ProductDetail(productId, pName, serialNumber, importDate, importPrice, supplier, status));
                 }
             } catch (Exception ex) {
-                System.err.println("Bo qua dong loi trong product_details.txt: " + ex.getMessage());
+                System.err.println("Bỏ qua dòng lỗi trong product_details.txt: " + ex.getMessage());
             }
         }
     }
@@ -438,7 +438,7 @@ public class ProductManager {
         if (productDetails.isEmpty() && Files.exists(path)) {
             try {
                 if (Files.size(path) > 200) {
-                    System.err.println("[CANH BAO]: Danh sach chi tiet trong bo nho rong, huy ghi de de bao ve file product_details.txt!");
+                    System.err.println("[CẢNH BÁO]: Danh sách chi tiết trong bộ nhớ rỗng, hủy ghi đè để bảo vệ file product_details.txt!");
                     return false;
                 }
             } catch (IOException ignored) {}

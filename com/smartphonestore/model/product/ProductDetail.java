@@ -40,8 +40,8 @@ public class ProductDetail {
     // Hiển thị một dòng chi tiết đẹp mắt trên console
     public void displayRow(String brand) {
         String statusVi = "IN_STOCK".equalsIgnoreCase(status) ? "Trong kho" :
-                         ("SOLD".equalsIgnoreCase(status) ? "Da ban" : "Bao hanh");
-        System.out.printf(" %-7s │ %-26s │ %-8s │ %-18s │ %-19s │ %,12.0f d │ %-14s │ %-9s%n",
+                         ("SOLD".equalsIgnoreCase(status) ? "Đã bán" : "Bảo hành");
+        System.out.printf(" %-7s │ %-26s │ %-8s │ %-18s │ %-19s │ %,12.0f đ │ %-14s │ %-9s%n",
                 productId,
                 productName != null ? (productName.length() > 26 ? productName.substring(0, 23) + "..." : productName) : "N/A",
                 brand != null ? brand : "N/A",
@@ -68,7 +68,7 @@ public class ProductDetail {
 
     public void setProductId(String productId) {
         if (productId == null || productId.trim().isEmpty()) {
-            throw new ValidationException("[LOI]: Ma san pham khong duoc de trong!");
+            throw new ValidationException("[LỖI]: Mã sản phẩm không được để trống!");
         }
         this.productId = productId.trim().toUpperCase();
     }
@@ -79,7 +79,7 @@ public class ProductDetail {
 
     public void setProductName(String productName) {
         if (productName == null || productName.trim().isEmpty()) {
-            this.productName = "San pham " + (productId != null ? productId : "");
+            this.productName = "Sản phẩm " + (productId != null ? productId : "");
         } else {
             this.productName = productName.trim();
         }
@@ -91,7 +91,7 @@ public class ProductDetail {
 
     public void setSerialNumber(String serialNumber) {
         if (serialNumber == null || serialNumber.trim().isEmpty()) {
-            throw new ValidationException("[LOI]: So Seri/IMEI khong duoc de trong!");
+            throw new ValidationException("[LỖI]: Số Seri/IMEI không được để trống!");
         }
         this.serialNumber = serialNumber.trim().toUpperCase();
     }
@@ -102,7 +102,7 @@ public class ProductDetail {
 
     public void setImportDate(String importDate) {
         if (importDate == null || importDate.trim().isEmpty()) {
-            throw new ValidationException("[LOI]: Ngay nhap khong duoc de trong!");
+            throw new ValidationException("[LỖI]: Ngày nhập không được để trống!");
         }
         this.importDate = importDate.trim();
     }
@@ -113,7 +113,7 @@ public class ProductDetail {
 
     public void setImportPrice(double importPrice) {
         if (importPrice <= 0) {
-            throw new ValidationException("[LOI]: Gia nhap san pham phai lon hon 0 VND!");
+            throw new ValidationException("[LỖI]: Giá nhập sản phẩm phải lớn hơn 0 VNĐ!");
         }
         this.importPrice = importPrice;
     }
@@ -124,7 +124,7 @@ public class ProductDetail {
 
     public void setSupplier(String supplier) {
         if (supplier == null || supplier.trim().isEmpty()) {
-            throw new ValidationException("[LOI]: Ten nha cung cap khong duoc de trong!");
+            throw new ValidationException("[LỖI]: Tên nhà cung cấp không được để trống!");
         }
         this.supplier = supplier.trim();
     }

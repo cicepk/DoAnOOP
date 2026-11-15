@@ -57,7 +57,7 @@ public abstract class Product {
 
     public void setId(String id) {
         if (id == null || !id.trim().toUpperCase().matches("^PRD\\d{2,}$")) {
-            throw new ValidationException("[LOI] Ma san pham khong hop le! Phai co dang PRDxx (vi du: PRD01, PRD02).");
+            throw new ValidationException("[LỖI] Mã sản phẩm không hợp lệ! Phải có dạng PRDxx (ví dụ: PRD01, PRD02).");
         }
         this.id = id.trim().toUpperCase();
     }
@@ -68,7 +68,7 @@ public abstract class Product {
 
     public void setName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new ValidationException("[LOI]: Ten san pham khong duoc de trong!");
+            throw new ValidationException("[LỖI]: Tên sản phẩm không được để trống!");
         }
         this.name = name.trim();
     }
@@ -79,7 +79,7 @@ public abstract class Product {
 
     public void setBrand(String brand) {
         if (brand == null || brand.trim().isEmpty()) {
-            throw new ValidationException("[LOI]: Hang san xuat khong duoc de trong!");
+            throw new ValidationException("[LỖI]: Hãng sản xuất không được để trống!");
         }
         this.brand = brand.trim();
     }
@@ -90,7 +90,7 @@ public abstract class Product {
 
     public void setPrice(double price) {
         if (price <= 0) {
-            throw new ValidationException("[LOI]: Gia ban san pham phai lon hon 0 VND!");
+            throw new ValidationException("[LỖI]: Giá bán sản phẩm phải lớn hơn 0 VNĐ!");
         }
         this.price = price;
     }
@@ -101,7 +101,7 @@ public abstract class Product {
 
     public void setStockQuantity(int stockQuantity) {
         if (stockQuantity < 0) {
-            throw new ValidationException("[LOI]: So luong ton kho khong duoc am!");
+            throw new ValidationException("[LỖI]: Số lượng tồn kho không được âm!");
         }
         this.stockQuantity = stockQuantity;
     }
@@ -112,7 +112,7 @@ public abstract class Product {
 
     public void setMinStockThreshold(int minStockThreshold) {
         if (minStockThreshold < 0) {
-            throw new ValidationException("[LOI]: Nguong canh bao ton kho toi thieu khong duoc am!");
+            throw new ValidationException("[LỖI]: Ngưỡng cảnh báo tồn kho tối thiểu không được âm!");
         }
         this.minStockThreshold = minStockThreshold;
     }
