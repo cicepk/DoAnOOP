@@ -10,6 +10,9 @@ import com.smartphonestore.model.sale.ElectronicPayment;
 import com.smartphonestore.model.sale.Invoice;
 import com.smartphonestore.model.sale.InvoiceDetail;
 import com.smartphonestore.util.InputHelper;
+import com.smartphonestore.model.enums.Role;
+import com.smartphonestore.manager.AccountManager;
+import com.smartphonestore.manager.ProductManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,15 +22,19 @@ public class SalesMenu {
     private final SalesManager salesManager;
     private final CustomerManager customerManager;
     private final EmployeeManager employeeManager;
+    private final AccountManager accountManager;
+    private final ProductManager productManager;
     private final String staffId;
 
     public SalesMenu(SalesManager salesManager, CustomerManager customerManager,
-                     EmployeeManager employeeManager, String staffId) {
+                     EmployeeManager employeeManager, String staffId,AccountManager accountManager, ProductManager productManager) {
         if (salesManager == null) throw new IllegalArgumentException("SalesManager khong duoc null.");
         this.salesManager = salesManager;
         this.customerManager = customerManager;
         this.employeeManager = employeeManager;
         this.staffId = staffId == null ? "" : staffId.trim();
+        this.accountManager = accountManager;
+        this.productManager = productManager;
     }
 
     public void show() {
@@ -43,7 +50,7 @@ public class SalesMenu {
             System.out.println("[7] Tim hoa don theo ma");
             System.out.println("[8] Huy hoa don chua thanh toan");
             System.out.println("[9] Thong ke doanh thu hom nay");
-            System.out.println("[10] Dang xuat");
+            System.out.println("[10] Quản lý khách hàng (TV4)");
             System.out.println("[0] Thoat chuong trinh");
             int choice = InputHelper.readInt("Chon: ", 0, 10);
             try {
@@ -57,7 +64,9 @@ public class SalesMenu {
                     case 7: searchInvoice(); break;
                     case 8: cancelInvoice(); break;
                     case 9: System.out.printf("Doanh thu da thanh toan hom nay: %,.0f VND%n", salesManager.revenueToday()); break;
-                    case 10: running = false; break;
+                    case 10: openCustomerMenu(); break;
+                    case 11: running = false; break;
+                    
                     case 0: System.out.println("Ket thuc chuong trinh."); System.exit(0); break;
                     default: break;
                 }
@@ -194,5 +203,13 @@ public class SalesMenu {
     private void cancelInvoice() {
         String id = InputHelper.readString("Ma hoa don can huy: ");
         System.out.println(salesManager.cancelInvoice(id) ? "Da huy hoa don va tra serial ve kho." : "Khong huy duoc hoa don.");
+    }
+    // ===================== [10] KHÁCH HÀNG (TV4) =====================
+
+    // Mở menu Quản lý khách hàng của TV4 với quyền ADMIN (được xóa phiếu bảo hành).
+    // Chọn [0] trong menu đó sẽ quay lại Menu Admin.
+    private void openCustomerMenu() {
+        new CustomerManagementMenu(customerManager, accountManager, salesManager,
+                                   productManager, Role.SALES).show();
     }
 }

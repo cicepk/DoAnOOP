@@ -1,6 +1,6 @@
-﻿# Format: id|name|brand|price|stockQuantity|productType(SMARTPHONE/FEATUREPHONE/ACCESSORY)|minThreshold|extraValue(Storage/BatteryDays/AccessoryType)
+# Format: id|name|brand|price|stockQuantity|productType(SMARTPHONE/FEATUREPHONE/ACCESSORY)|minThreshold|extraValue(Storage/BatteryDays/AccessoryType)
 PRD01|iPhone 15 Pro Max 256GB|Apple|29990000|5|SMARTPHONE|3|256
-PRD02|Samsung Galaxy S24 Ultra 512GB|Samsung|28500000|7|SMARTPHONE|2|512
+PRD02|Samsung Galaxy S24 Ultra 512GB|Samsung|28500000|5|SMARTPHONE|2|512
 PRD03|Xiaomi Redmi Note 13 128GB|Xiaomi|4890000|5|SMARTPHONE|4|128
 PRD04|iPhone 16 Pro 128GB|Apple|28990000|4|SMARTPHONE|3|128
 PRD05|iPhone 13 128GB|Apple|13490000|6|SMARTPHONE|3|128
