@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 /** Lớp cha trừu tượng của hồ sơ khách hàng (StandardCustomer, VipCustomer). */
 public abstract class Customer implements ILoyaltyRankable{
     // SĐT: 10 số, bắt đầu bằng 0. Nếu nhóm chọn quy tắc khác thì chỉ cần đổi ở đây.
-    public static final String PHONE_REGEX = "0\\d{9}";
+    public static final String PHONE_REGEX = "0\\d{9,10}";
     private static final String EMAIL_REGEX = "[^@\\s|]+@[^@\\s|]+\\.[^@\\s|]+";
 
     private final String id;
@@ -73,7 +73,7 @@ public abstract class Customer implements ILoyaltyRankable{
 
     public final void setPhoneNumber(String p) {
         if (p == null || !p.trim().matches(PHONE_REGEX)) {
-            throw new ValidationException("SĐT phải gồm 10 và bắt đầu bằng số 0");
+            throw new ValidationException("SĐT phải gồm 10 hoặc 11 số và bắt đầu bằng số 0");
         }
         this.phoneNumber = p.trim();
     }
