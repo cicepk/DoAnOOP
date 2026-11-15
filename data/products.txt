@@ -1,4 +1,4 @@
-﻿# Format: id|name|brand|price|stockQuantity|productType(SMARTPHONE/FEATUREPHONE/ACCESSORY)|minThreshold|extraValue(Storage/BatteryDays/AccessoryType)
+# Format: id|name|brand|price|stockQuantity|productType(SMARTPHONE/FEATUREPHONE/ACCESSORY)|minThreshold|extraValue(Storage/BatteryDays/AccessoryType)
 PRD01|iPhone 15 Pro Max 256GB|Apple|29990000|5|SMARTPHONE|3|256
 PRD02|Samsung Galaxy S24 Ultra 512GB|Samsung|28500000|7|SMARTPHONE|2|512
 PRD03|Xiaomi Redmi Note 13 128GB|Xiaomi|4890000|5|SMARTPHONE|4|128
@@ -39,13 +39,13 @@ PRD37|Energizer Energy E241S|Energizer|890000|8|FEATUREPHONE|3|16
 PRD38|Cu Sac Nhanh Apple 20W Type-C|Apple|550000|6|ACCESSORY|5|SAC
 PRD39|Cu Sac Nhanh Anker 30W Type-C|Anker|380000|14|ACCESSORY|5|SAC
 PRD40|Cu Sac Nhanh Samsung 25W Type-C|Samsung|390000|12|ACCESSORY|5|SAC
-PRD41|Cu Sac GaN Ugreen 65W 3 Cong|Ugreen|690000|9|ACCESSORY|4|SAC
+PRD41|Cu Sac GaN Ugreen 65W 3 Cong Type-C|Ugreen|690000|9|ACCESSORY|4|SAC
 PRD42|Tai Nghe Khong Day Galaxy Buds2|Samsung|1850000|8|ACCESSORY|3|TAI_NGHE
 PRD43|Tai Nghe Bluetooth AirPods Pro 2|Apple|5890000|15|ACCESSORY|2|TAI_NGHE
 PRD44|Tai Nghe Chong On Sony WF-1000XM5|Sony|4990000|12|ACCESSORY|2|TAI_NGHE
 PRD45|Tai Nghe Chup Tai Marshall Major IV|Marshall|3490000|9|ACCESSORY|2|TAI_NGHE
-PRD46|Op Lung Magsafe Trong Suot|Apple|490000|8|ACCESSORY|5|OP_LUNG
+PRD46|Op Lung Magsafe iPhone 14 Trong Suot|Apple|490000|8|ACCESSORY|5|OP_LUNG
 PRD47|Op Lung Chong Soc UAG iPhone 15|UAG|1150000|15|ACCESSORY|3|OP_LUNG
 PRD48|Op Lung Silicon Samsung S24|Samsung|350000|12|ACCESSORY|4|OP_LUNG
-PRD49|Kinh Cuong Luc KingKong|KingKong|120000|10|ACCESSORY|8|CUONG_LUC
-PRD50|Kinh Cuong Luc MiPow KingBull|MiPow|320000|8|ACCESSORY|5|CUONG_LUC
+PRD49|Kinh Cuong Luc KingKong iPhone 14|KingKong|120000|10|ACCESSORY|8|CUONG_LUC
+PRD50|Kinh Cuong Luc MiPow KingBull iPhone 15|MiPow|320000|8|ACCESSORY|5|CUONG_LUC
