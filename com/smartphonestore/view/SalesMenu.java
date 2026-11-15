@@ -50,7 +50,8 @@ public class SalesMenu {
             System.out.println("[7] Tim hoa don theo ma");
             System.out.println("[8] Huy hoa don chua thanh toan");
             System.out.println("[9] Thong ke doanh thu hom nay");
-            System.out.println("[10] Quản lý khách hàng (TV4)");
+            System.out.println("[10] Quản lý khách hàng");
+            System.out.println("[11] Dang xuat");
             System.out.println("[0] Thoat chuong trinh");
             int choice = InputHelper.readInt("Chon: ", 0, 11);
             try {
@@ -66,7 +67,6 @@ public class SalesMenu {
                     case 9: System.out.printf("Doanh thu da thanh toan hom nay: %,.0f VND%n", salesManager.revenueToday()); break;
                     case 10: openCustomerMenu(); break;
                     case 11: running = false; break;
-                    
                     case 0: System.out.println("Ket thuc chuong trinh."); System.exit(0); break;
                     default: break;
                 }
