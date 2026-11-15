@@ -51,7 +51,7 @@ public class SalesMenu {
             System.out.println("[8] Huy hoa don chua thanh toan");
             System.out.println("[9] Thong ke doanh thu hom nay");
             System.out.println("[10] Quản lý khách hàng");
-            System.out.println("[11] Dang xuat");
+            System.out.println("[11] Đăng xuất");
             System.out.println("[0] Thoat chuong trinh");
             int choice = InputHelper.readInt("Chon: ", 0, 11);
             try {
