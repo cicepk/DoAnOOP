@@ -1,19 +1,18 @@
 package com.smartphonestore.view;
 
+import com.smartphonestore.manager.AccountManager;
 import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.EmployeeManager;
+import com.smartphonestore.manager.ProductManager;
 import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.model.auth.Employee;
 import com.smartphonestore.model.auth.SalesStaff;
+import com.smartphonestore.model.enums.Role;
 import com.smartphonestore.model.sale.CashPayment;
 import com.smartphonestore.model.sale.ElectronicPayment;
 import com.smartphonestore.model.sale.Invoice;
 import com.smartphonestore.model.sale.InvoiceDetail;
 import com.smartphonestore.util.InputHelper;
-import com.smartphonestore.model.enums.Role;
-import com.smartphonestore.manager.AccountManager;
-import com.smartphonestore.manager.ProductManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +50,9 @@ public class SalesMenu {
             System.out.println("[8] Huy hoa don chua thanh toan");
             System.out.println("[9] Thong ke doanh thu hom nay");
             System.out.println("[10] Quản lý khách hàng (TV4)");
+            System.out.println("[11] Đăng xuất");
             System.out.println("[0] Thoat chuong trinh");
-            int choice = InputHelper.readInt("Chon: ", 0, 10);
+            int choice = InputHelper.readInt("Chon: ", 0, 11);
             try {
                 switch (choice) {
                     case 1: showAllInvoices(); break;

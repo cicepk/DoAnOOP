@@ -1,5 +1,5 @@
 # Format: id|fullName|phoneNumber|baseSalary|role|hireYear|extra (ADMIN: managementBonus ; WAREHOUSE: warehouseZone,overtimeHours ; SALES: commissionRate,monthlyRevenue - moi gia tri la 1 cot)
 EMP01|Nguyễn Văn Quản Lý|0901234567|15000000|ADMIN|2020|5000000
 EMP02|Trần Văn Kho|0912345678|8500000|WAREHOUSE|2022|KHO_A|15
-EMP03|Lê Thị Bán Hàng|0923456789|6500000|SALES|2023|0.03|215081400
+EMP03|Lê Thị Bán Hàng|0923456789|6500000|SALES|2023|0.03|246570900
 EMP04|Phạm Minh Sales|0934567890|6500000|SALES|2024|0.03|65448000
