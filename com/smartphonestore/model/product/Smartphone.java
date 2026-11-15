@@ -34,9 +34,9 @@ public class Smartphone extends Phone implements IDiscountable {
     // Ghi đè hàm in thông tin ra console
     @Override
     public void displayInfo() {
-        System.out.printf("[SMARTPHONE] ID: %-6s | Ten: %-26s | Hang: %-10s | Gia: %,12.0f d | Ton: %-3d | HDH: %-7s | ROM: %4dGB | Han BH: %2d thang%s%n",
+        System.out.printf("[SMARTPHONE] ID: %-6s | Tên: %-26s | Hãng: %-10s | Giá: %,12.0f đ | Tồn: %-3d | HĐH: %-7s | ROM: %4dGB | Hạn BH: %2d tháng%s%n",
                 getId(), getName(), getBrand(), getPrice(), getStockQuantity(), getOperatingSystem(), getStorageCapacity(), getWarrantyMonths(),
-                isLowStock() ? " [SAP HET HANG]" : "");
+                isLowStock() ? " [SẮP HẾT HÀNG]" : "");
     }
 
     public int getStorageCapacity() {
@@ -45,7 +45,7 @@ public class Smartphone extends Phone implements IDiscountable {
 
     public void setStorageCapacity(int storageCapacity) {
         if (storageCapacity <= 0) {
-            throw new ValidationException("[LOI]: Dung luong ROM phai lon hon 0 GB!");
+            throw new ValidationException("[LỖI]: Dung lượng ROM phải lớn hơn 0 GB!");
         }
         this.storageCapacity = storageCapacity;
     }
