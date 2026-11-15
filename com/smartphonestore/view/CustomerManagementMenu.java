@@ -347,7 +347,7 @@ public class CustomerManagementMenu {
         System.out.println("[3] Cập nhật trạng thái phiếu");
         System.out.println("[4] Xóa phiếu đã đóng (chỉ Admin)");
         System.out.println("[0] Quay lại Menu trước");
-        int sub = InputHelper.readInt("Chọn: ", 1, 5);
+        int sub = InputHelper.readInt("Chọn: ", 0, 4);
         switch (sub) {
             case 1:
                 printClaims(manager.getClaimsByCustomer(askCustomer().getId()));
