@@ -120,7 +120,7 @@ public class CustomerManagementMenu {
 
     private void addCustomer() {
         String name = InputHelper.readString("Họ tên: ");
-        String phone = InputHelper.readString("SĐT (10 hoặc 11 số, bắt đầu bằng 0): ");
+        String phone = InputHelper.readString("SĐT (10 só, bắt đầu bằng 0): ");
         String email = InputHelper.readString("Email: ");
         Customer c = manager.addCustomer(name, phone, email);
         System.out.println("Đã thêm khách hàng, mã: " + c.getId());

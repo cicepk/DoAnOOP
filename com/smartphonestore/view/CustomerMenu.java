@@ -116,7 +116,7 @@ public class CustomerMenu {
     String phone = me.getPhoneNumber();   // giữ nguyên nếu không sửa
     String email = me.getEmail();
     if (choice == 1 || choice == 2) {
-        phone = InputHelper.readString("SĐT mới (10 hoặc 11 số, bắt đầu bằng 0): ");
+        phone = InputHelper.readString("SĐT mới (10, bắt đầu bằng 0): ");
     }
     if (choice == 1 || choice == 3) {
         email = InputHelper.readString("Email mới: ");

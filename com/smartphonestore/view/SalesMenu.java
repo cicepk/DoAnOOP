@@ -52,7 +52,7 @@ public class SalesMenu {
             System.out.println("[9] Thong ke doanh thu hom nay");
             System.out.println("[10] Quản lý khách hàng (TV4)");
             System.out.println("[0] Thoat chuong trinh");
-            int choice = InputHelper.readInt("Chon: ", 0, 10);
+            int choice = InputHelper.readInt("Chon: ", 0, 11);
             try {
                 switch (choice) {
                     case 1: showAllInvoices(); break;
