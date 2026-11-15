@@ -74,7 +74,8 @@ public class WarehouseMenu {
                         detailsToShow = prd.getAllProductDetails();
                         title = "TAT CA CON MAY TRONG KHO";
                     } else if (subChoice == 2) {
-                        String brand = InputHelper.readString("Nhap ten hang muon xem (vi du Apple, Samsung, Xiaomi, Nokia): ");
+                        String brand = InputHelper
+                                .readString("Nhap ten hang muon xem (vi du Apple, Samsung, Xiaomi, Nokia): ");
                         detailsToShow = prd.getDetailsByBrand(brand);
                         title = "HANG SAN XUAT: " + brand.toUpperCase();
                     } else if (subChoice == 3) {
@@ -87,12 +88,16 @@ public class WarehouseMenu {
                         break;
                     }
 
-                    System.out.println("\n===============================================================================================================================");
+                    System.out.println(
+                            "\n===============================================================================================================================");
                     System.out.println("                                       BANG CHI TIET CON MAY - " + title);
-                    System.out.println("===============================================================================================================================");
+                    System.out.println(
+                            "===============================================================================================================================");
                     System.out.printf(" %-7s │ %-24s │ %-8s │ %-18s │ %-19s │ %-14s │ %-12s │ %-9s%n",
-                            "MA SP", "TEN SAN PHAM", "HANG", "SO SERI / IMEI", "NGAY GIO NHAP", "GIA NHAP", "NHA CUNG CAP", "TRANG THAI");
-                    System.out.println("────────┼──────────────────────────┼──────────┼────────────────────┼─────────────────────┼────────────────┼──────────────┼──────────");
+                            "MA SP", "TEN SAN PHAM", "HANG", "SO SERI / IMEI", "NGAY GIO NHAP", "GIA NHAP",
+                            "NHA CUNG CAP", "TRANG THAI");
+                    System.out.println(
+                            "────────┼──────────────────────────┼──────────┼────────────────────┼─────────────────────┼────────────────┼──────────────┼──────────");
 
                     if (detailsToShow.isEmpty()) {
                         System.out.println("  [!] Khong tim thay con may nao phu hop trong du lieu chi tiet.");
@@ -104,10 +109,13 @@ public class WarehouseMenu {
                             String pName = p != null ? p.getName() : "Khong xac dinh";
                             String pBrand = p != null ? p.getBrand() : "N/A";
                             d.displayRow(pName, pBrand);
-                            if ("IN_STOCK".equalsIgnoreCase(d.getStatus())) inStockCount++;
-                            else soldCount++;
+                            if ("IN_STOCK".equalsIgnoreCase(d.getStatus()))
+                                inStockCount++;
+                            else
+                                soldCount++;
                         }
-                        System.out.println("===============================================================================================================================");
+                        System.out.println(
+                                "===============================================================================================================================");
                         System.out.printf("Tong cong: %d con may (Trong kho: %d | Da xuat ban: %d)%n",
                                 detailsToShow.size(), inStockCount, soldCount);
                     }
@@ -132,7 +140,9 @@ public class WarehouseMenu {
                         while (true) {
                             String text = InputHelper.readString("Nhap ngay gio nhap kho [dd/MM/yyyy HH:mm:ss]: ");
                             try {
-                                importDate = DateUtil.formatDateTime(DateUtil.parseDateTime(text)); // chi go ngay thi tu dong lay 00:00:00
+                                importDate = DateUtil.formatDateTime(DateUtil.parseDateTime(text)); // chi go ngay thi
+                                                                                                    // tu dong lay
+                                                                                                    // 00:00:00
                                 break;
                             } catch (IllegalArgumentException e) {
                                 System.out.println("[X] " + e.getMessage());
@@ -147,7 +157,8 @@ public class WarehouseMenu {
                     // VÒNG LẶP WHILE NHẬP HÀNG LIÊN TỤC CHO ĐẾN KHI GÕ 0
                     while (true) {
                         System.out.println("\n--------------------------------------------------------------");
-                        String rawId = InputHelper.readString("➤ Nhap Ma san pham muon nhap (vi du: PRD01, hoac go '0' de dung): ");
+                        String rawId = InputHelper
+                                .readString("➤ Nhap Ma san pham muon nhap (vi du: PRD01, hoac go '0' de dung): ");
 
                         if ("0".equals(rawId)) {
                             System.out.println("[OK] Ket thuc cac mat hang trong phieu nhap!");
@@ -160,7 +171,7 @@ public class WarehouseMenu {
                         if (p != null) {
                             // TRƯỜNG HỢP 1: SẢN PHẨM ĐÃ CÓ TRONG KHO
                             System.out.printf(">> [SAN PHAM CO SAN]: %s | Hang: %s | Ton hien tai: %d chiec%n",
-                                     p.getName(), p.getBrand(), p.getStockQuantity());
+                                    p.getName(), p.getBrand(), p.getStockQuantity());
 
                             int qty = InputHelper.readInt("Nhap so luong hang moi ve: ", 1, 100000);
                             double importPrice = InputHelper.readDouble("Nhap gia nhap moi chiec (VND): ", 1);
@@ -168,31 +179,38 @@ public class WarehouseMenu {
                             // Nhập số IMEI/Seri cho từng máy trong lô
                             List<ProductDetail> batchDetails = new ArrayList<>();
                             Set<String> batchSerials = new HashSet<>(); // serial da nhap trong lo nay
-                            boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
+                            boolean autoSn = InputHelper.readYesNo(String
+                                    .format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
                                 if (autoSn) {
                                     int k = i;
                                     do { // sinh lai toi khi khong trung kho va khong trung lo
-                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", k++);
+                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000)
+                                                + String.format("%02d", k++);
                                     } while (prd.isSerialExists(serial) || batchSerials.contains(serial));
                                     System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
                                 } else {
                                     while (true) {
-                                        serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
+                                        serial = InputHelper
+                                                .readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty))
+                                                .toUpperCase();
                                         if (prd.isSerialExists(serial) || batchSerials.contains(serial)) {
-                                            System.out.println("   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
+                                            System.out.println(
+                                                    "   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
                                             continue;
                                         }
                                         break;
                                     }
                                 }
                                 batchSerials.add(serial);
-                                batchDetails.add(new ProductDetail(p.getId(), p.getName(), serial, importDate, importPrice, supplier, ProductManager.IN_STOCK));
+                                batchDetails.add(new ProductDetail(p.getId(), p.getName(), serial, importDate,
+                                        importPrice, supplier, ProductManager.IN_STOCK));
                             }
 
                             prd.addProductDetails(batchDetails);
-                            prd.syncStockFromDetails(); // thay cho p.increaseStock(qty): ton kho = so serial IN_STOCK thực tế
+                            prd.syncStockFromDetails(); // thay cho p.increaseStock(qty): ton kho = so serial IN_STOCK
+                                                        // thực tế
 
                             sessionItemCount++;
                             sessionTotalQty += qty;
@@ -205,12 +223,15 @@ public class WarehouseMenu {
                             // TRƯỜNG HỢP 2: SẢN PHẨM MỚI TOANH CHƯA CÓ TRONG KHO
                             if (!id.matches("^PRD\\d{2,}$")) {
                                 String autoId = prd.generateNextID();
-                                System.out.printf(">> [THONG TIN]: Ma '%s' chua dung chuan 'PRDxx'. He thong tu dong cap ma: %s%n", id, autoId);
+                                System.out.printf(
+                                        ">> [THONG TIN]: Ma '%s' chua dung chuan 'PRDxx'. He thong tu dong cap ma: %s%n",
+                                        id, autoId);
                                 id = autoId;
                             }
 
                             System.out.printf(">> [SAN PHAM MOI]: Ma '%s' chua tung co trong kho!%n", id);
-                            boolean confirm = InputHelper.readYesNo("Ban co muon khai bao san pham moi nay luon khong? (Y/N): ");
+                            boolean confirm = InputHelper
+                                    .readYesNo("Ban co muon khai bao san pham moi nay luon khong? (Y/N): ");
                             if (!confirm) {
                                 System.out.println("[!] Bo qua ma nay.");
                                 continue;
@@ -234,16 +255,23 @@ public class WarehouseMenu {
                             try {
                                 if (typeChoice == 1) {
                                     String os = InputHelper.readString("Nhap he dieu hanh (iOS / Android): ");
-                                    int storage = InputHelper.readInt("Nhap dung luong ROM (GB, vi du 128, 256): ", 1, 2048);
-                                    newProduct = new Smartphone(id, name, brand, sellPrice, qty, threshold, os, storage);
+                                    int storage = InputHelper.readInt("Nhap dung luong ROM (GB, vi du 128, 256): ", 1,
+                                            2048);
+                                    newProduct = new Smartphone(id, name, brand, sellPrice, qty, threshold, os,
+                                            storage);
                                 } else if (typeChoice == 2) {
-                                    int battery = InputHelper.readInt("Nhap thoi luong pin cho (so ngay, vi du 7, 10): ", 1, 60);
-                                    newProduct = new Featurephone(id, name, brand, sellPrice, qty, threshold, "KaiOS", battery);
+                                    int battery = InputHelper
+                                            .readInt("Nhap thoi luong pin cho (so ngay, vi du 7, 10): ", 1, 60);
+                                    newProduct = new Featurephone(id, name, brand, sellPrice, qty, threshold, "KaiOS",
+                                            battery);
                                 } else {
                                     String accType;
                                     while (true) {
-                                        accType = InputHelper.readString("Nhap loai phu kien (SAC, TAI_NGHE, OP_LUNG, CUONG_LUC): ").toUpperCase();
-                                        if (accType.matches("^(SAC|TAI_NGHE|OP_LUNG|CUONG_LUC)$")) break;
+                                        accType = InputHelper
+                                                .readString("Nhap loai phu kien (SAC, TAI_NGHE, OP_LUNG, CUONG_LUC): ")
+                                                .toUpperCase();
+                                        if (accType.matches("^(SAC|TAI_NGHE|OP_LUNG|CUONG_LUC)$"))
+                                            break;
                                         System.out.println("[X] Chi duoc chon: SAC, TAI_NGHE, OP_LUNG hoac CUONG_LUC!");
                                     }
                                     newProduct = new Accessory(id, name, brand, sellPrice, qty, threshold, accType);
@@ -260,27 +288,33 @@ public class WarehouseMenu {
                             // Nhập danh sách IMEI/Seri cho sản phẩm mới
                             List<ProductDetail> batchDetails = new ArrayList<>();
                             Set<String> batchSerials = new HashSet<>(); // serial da nhap trong lo nay
-                            boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
+                            boolean autoSn = InputHelper.readYesNo(String
+                                    .format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
                                 if (autoSn) {
                                     int k = i;
                                     do { // sinh lai toi khi khong trung kho va khong trung lo
-                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", k++);
+                                        serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000)
+                                                + String.format("%02d", k++);
                                     } while (prd.isSerialExists(serial) || batchSerials.contains(serial));
                                     System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
                                 } else {
                                     while (true) {
-                                        serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
+                                        serial = InputHelper
+                                                .readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty))
+                                                .toUpperCase();
                                         if (prd.isSerialExists(serial) || batchSerials.contains(serial)) {
-                                            System.out.println("   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
+                                            System.out.println(
+                                                    "   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
                                             continue;
                                         }
                                         break;
                                     }
                                 }
                                 batchSerials.add(serial);
-                                batchDetails.add(new ProductDetail(id, name, serial, importDate, importPrice, supplier, ProductManager.IN_STOCK));
+                                batchDetails.add(new ProductDetail(id, name, serial, importDate, importPrice, supplier,
+                                        ProductManager.IN_STOCK));
                             }
 
                             boolean added = prd.add(newProduct);
@@ -290,7 +324,9 @@ public class WarehouseMenu {
                                 sessionItemCount++;
                                 sessionTotalQty += qty;
                                 sessionTotalCost += (qty * importPrice);
-                                System.out.printf("[OK] Da tao thanh cong san pham moi '%s' (Ma: %s) va luu %d con may vao kho!%n", name, id, qty);
+                                System.out.printf(
+                                        "[OK] Da tao thanh cong san pham moi '%s' (Ma: %s) va luu %d con may vao kho!%n",
+                                        name, id, qty);
                             } else {
                                 System.out.println("[X] Loi khi luu san pham moi!");
                             }
@@ -333,7 +369,8 @@ public class WarehouseMenu {
                         double inputPrice = InputHelper.readDouble("Nhap gia moi (nhap 0 neu giu nguyen): ", 0);
                         double newPrice = (inputPrice == 0) ? p.getPrice() : inputPrice;
 
-                        int inputThreshold = InputHelper.readInt("Nhap nguong ton kho moi (nhap -1 neu giu nguyen): ", -1, 10000);
+                        int inputThreshold = InputHelper.readInt("Nhap nguong ton kho moi (nhap -1 neu giu nguyen): ",
+                                -1, 10000);
                         int newThreshold = (inputThreshold == -1) ? p.getMinStockThreshold() : inputThreshold;
 
                         boolean ok = prd.updateProductInfo(p.getId(), newName, newPrice, newThreshold);
@@ -411,12 +448,14 @@ public class WarehouseMenu {
                         System.out.println("[!] San pham nay (Featurephone) khong ho tro chiet khau IDiscountable!");
                     } else {
                         System.out.printf("San pham: %s | Gia goc: %,.0f VND%n", p.getName(), p.getPrice());
-                        double rate = InputHelper.readDouble("Nhap ty le chiet khau (vi du 0.1 cho 10%, 0.2 cho 20%): ", 0.0, 1.0);
+                        double rate = InputHelper.readDouble("Nhap ty le chiet khau (vi du 0.1 cho 10%, 0.2 cho 20%): ",
+                                0.0, 1.0);
 
                         double discountedPrice = prd.applyDiscount(p.getId(), rate);
                         if (discountedPrice > 0) {
                             System.out.printf("[OK] Da ap dung giam gia %.0f%% thanh cong!%n", rate * 100);
-                            System.out.printf("[OK] Gia moi cua '%s': %,.0f VND (Da dong bo vao 'products.txt')%n", p.getName(), discountedPrice);
+                            System.out.printf("[OK] Gia moi cua '%s': %,.0f VND (Da dong bo vao 'products.txt')%n",
+                                    p.getName(), discountedPrice);
                         } else {
                             System.out.println("[X] Khong ap dung duoc chiet khau!");
                         }
@@ -447,9 +486,11 @@ public class WarehouseMenu {
                                 System.out.println("[X] San pham nay khong phai la Smartphone!");
                             } else {
                                 Smartphone sp = (Smartphone) p;
-                                System.out.printf("Dien thoai: %s | Gia niem yet: %,.0f VND%n", sp.getName(), sp.getPrice());
+                                System.out.printf("Dien thoai: %s | Gia niem yet: %,.0f VND%n", sp.getName(),
+                                        sp.getPrice());
                                 double tradeInPrice = sp.applyTradeInDiscount();
-                                System.out.printf("[OK] Gia sau khi tro gia Thu cu doi moi (giam 10%%): %,.0f VND%n", tradeInPrice);
+                                System.out.printf("[OK] Gia sau khi tro gia Thu cu doi moi (giam 10%%): %,.0f VND%n",
+                                        tradeInPrice);
                             }
                             break;
                         }
@@ -462,7 +503,8 @@ public class WarehouseMenu {
                             if (p == null) {
                                 System.out.println("[X] Khong tim thay san pham co ma: " + id);
                             } else if (!(p instanceof Featurephone)) {
-                                System.out.println("[X] San pham nay khong phai la Dien thoai pho thong (Featurephone)!");
+                                System.out
+                                        .println("[X] San pham nay khong phai la Dien thoai pho thong (Featurephone)!");
                             } else {
                                 Featurephone fp = (Featurephone) p;
                                 System.out.printf("Dien thoai: %s | Trang thai SOS hien tai: %s%n",
@@ -485,7 +527,8 @@ public class WarehouseMenu {
                             } else {
                                 Accessory acc = (Accessory) p;
                                 System.out.printf("Phu kien: %s (Loai: %s)%n", acc.getName(), acc.getAccessoryType());
-                                String phoneName = InputHelper.readString("Nhap ten dong dien thoai muon kiem tra (vi du: iPhone 15, Samsung S24): ");
+                                String phoneName = InputHelper.readString(
+                                        "Nhap ten dong dien thoai muon kiem tra (vi du: iPhone 15, Samsung S24): ");
                                 acc.isCompatibleWith(phoneName);
                             }
                             break;

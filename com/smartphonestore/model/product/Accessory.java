@@ -11,122 +11,148 @@ public class Accessory extends Product implements IDiscountable {
         setAccessoryType(accessoryType);
     }
 
-    // Phương thức kiểm tra phụ kiện có tương thích với điện thoại không
+    // Phương thức kiểm tra phụ kiện có tương thích với điện thoại không theo đặc tính sản phẩm
     public boolean isCompatibleWith(String phoneModelName) {
         if (phoneModelName == null || phoneModelName.trim().isEmpty()) {
             System.out.println("[X] Ten dong may khong duoc de trong!");
             return false;
         }
-        String phoneLower = phoneModelName.toLowerCase().trim();
-        String accessoryNameLower = getName().toLowerCase();
-        String type = getAccessoryType();
+
+        String phone = phoneModelName.toLowerCase().trim();
+        String accName = getName().toLowerCase();
+        String brand = getBrand().toLowerCase();
+        String type = getAccessoryType() != null ? getAccessoryType().toUpperCase() : "";
+
+        // 1. Nhận diện dòng máy / hệ sinh thái mà người dùng nhập vào
+        boolean isIPhoneInput = phone.contains("iphone") || phone.contains("apple") || phone.matches(".*\\bip\\s*\\d+.*");
+        boolean isSamsungInput = phone.contains("samsung") || phone.contains("galaxy") || phone.matches(".*\\b(s24|s23|s22|s21|a55|a54|fold|flip)\\b.*");
+
+        // 2. Nhận diện đặc tính của phụ kiện
+        // Đặc tính dòng iPhone: có từ khóa magsafe, iphone, airpods, hoặc hãng Apple
+        boolean hasIPhoneTrait = accName.contains("magsafe") || accName.contains("iphone") 
+                                || accName.contains("airpods") || brand.equals("apple");
+
+        // Đặc tính dòng Samsung: có từ khóa samsung, galaxy, buds, hoặc hãng Samsung
+        boolean hasSamsungTrait = accName.contains("samsung") || accName.contains("galaxy") 
+                                 || accName.contains("buds") || brand.equals("samsung");
 
         // =========================================================================
-        // NHÓM 1: CỦ SẠC (SAC)
-        // Tất cả củ sạc (Apple, Samsung, Anker, Ugreen...) đều dùng chuẩn sạc nhanh
-        // quốc tế USB-PD / Type-C hoặc GaN đa cổng, tương thích sạc tốt cho mọi Smartphone.
+        // TRƯỜNG HỢP 1: CỦ SẠC (SAC)
+        // Các củ sạc hiện nay (Apple, Samsung, Anker, Ugreen...) đều dùng chuẩn sạc nhanh
+        // quốc tế Type-C / GaN (USB Power Delivery), tương thích sạc tốt cho mọi dòng điện thoại.
         // =========================================================================
-        if ("SAC".equalsIgnoreCase(type)) {
-            // Cùng hệ sinh thái chính hãng (Apple sạc iPhone, Samsung sạc Samsung)
-            if ((phoneLower.contains("iphone") || phoneLower.contains("apple")) && getBrand().equalsIgnoreCase("Apple")) {
-                System.out.printf("[OK] TUONG THICH TOI UU: '%s' la cu sac chinh hang Apple, ho tro sac nhanh chuan PD cho '%s'!%n", 
-                        getName(), phoneModelName);
-                return true;
-            }
-            if ((phoneLower.contains("samsung") || phoneLower.contains("galaxy")) && getBrand().equalsIgnoreCase("Samsung")) {
-                System.out.printf("[OK] TUONG THICH TOI UU: '%s' la cu sac chinh hang Samsung (Super Fast Charging), toi uu cho '%s'!%n", 
-                        getName(), phoneModelName);
-                return true;
-            }
-            // Sạc đa năng (Anker, Ugreen...) hoặc sạc chuẩn Type-C/GaN chéo hãng
-            System.out.printf("[OK] TUONG THICH: '%s' (Hang %s) dung cong Type-C / GaN chuan quoc te (USB Power Delivery), ho tro sac nhanh an toan cho '%s'!%n",
-                    getName(), getBrand(), phoneModelName);
-            return true;
-        }
-
-        // =========================================================================
-        // NHÓM 2: TAI NGHE (TAI_NGHE)
-        // Tai nghe Bluetooth (AirPods, Galaxy Buds, Sony, Marshall...) kết nối chuẩn quốc tế
-        // với mọi Smartphone có Bluetooth.
-        // =========================================================================
-        if ("TAI_NGHE".equalsIgnoreCase(type)) {
-            if ((phoneLower.contains("iphone") || phoneLower.contains("apple")) && getBrand().equalsIgnoreCase("Apple")) {
-                System.out.printf("[OK] TUONG THICH TOI UU: '%s' ket noi he sinh thai Apple, ho tro am thanh khong gian & Pop-up tien loi cho '%s'!%n", 
-                        getName(), phoneModelName);
-                return true;
-            }
-            if ((phoneLower.contains("samsung") || phoneLower.contains("galaxy")) && getBrand().equalsIgnoreCase("Samsung")) {
-                System.out.printf("[OK] TUONG THICH TOI UU: '%s' ket noi he sinh thai Galaxy toi uu cho '%s'!%n", 
-                        getName(), phoneModelName);
-                return true;
-            }
-            System.out.printf("[OK] TUONG THICH: '%s' (Hang %s) ho tro Bluetooth chuan quoc te, ket noi dam thoai & nghe nhac tot voi '%s'!%n",
-                    getName(), getBrand(), phoneModelName);
-            return true;
-        }
-
-        // =========================================================================
-        // NHÓM 3: ỐP LƯNG (OP_LUNG) & KÍNH CƯỜNG LỰC (CUONG_LUC)
-        // Bắt buộc phải khớp đúng khuôn máy / kích thước màn hình
-        // =========================================================================
-        if ("OP_LUNG".equalsIgnoreCase(type) || "CUONG_LUC".equalsIgnoreCase(type)) {
-            boolean isCase = "OP_LUNG".equalsIgnoreCase(type);
-
-            // Chuẩn hóa tên nhập vào (xử lý "ip 14" -> "iphone 14", "galaxy s24" -> "samsung s24 / s24")
-            String normPhone = phoneLower.replaceAll("\\bip\\s*", "iphone ")
-                                         .replaceAll("\\bgalaxy\\s*", "")
-                                         .trim();
-
-            // 1. Kiểm tra khớp trực tiếp 2 chiều
-            boolean matched = accessoryNameLower.contains(phoneLower) || accessoryNameLower.contains(normPhone);
-
-            // 2. Đối chiếu các dòng máy phổ biến
-            if (!matched) {
-                String[] popularModels = {
-                    "iphone 16 pro max", "iphone 16 pro", "iphone 16 plus", "iphone 16",
-                    "iphone 15 pro max", "iphone 15 pro", "iphone 15 plus", "iphone 15",
-                    "iphone 14 pro max", "iphone 14 pro", "iphone 14 plus", "iphone 14",
-                    "iphone 13 pro max", "iphone 13 pro", "iphone 13",
-                    "s24 ultra", "s24 plus", "s24", "samsung s24",
-                    "s23 fe", "samsung s23", "a55", "samsung a55",
-                    "z fold6", "z flip6"
-                };
-                for (String m : popularModels) {
-                    if (accessoryNameLower.contains(m) && (phoneLower.contains(m) || normPhone.contains(m))) {
-                        matched = true;
-                        break;
-                    }
-                }
-            }
-
-            boolean isMagSafe = accessoryNameLower.contains("magsafe");
-
-            if (matched) {
-                if (isCase && isMagSafe) {
-                    System.out.printf("[OK] TUONG THICH: '%s' vua khit voi dong may '%s' va ho tro sac khong day tu tinh MagSafe!%n", getName(), phoneModelName);
-                } else if (isCase) {
-                    System.out.printf("[OK] TUONG THICH: '%s' vua khit voi dong may '%s'!%n", getName(), phoneModelName);
+        if ("SAC".equals(type)) {
+            if (isIPhoneInput) {
+                if (hasIPhoneTrait) {
+                    System.out.printf("[OK] TUONG THICH TOI UU: '%s' la cu sac chinh hang Apple, ho tro sac nhanh chuan PD toi uu cho tat ca cac dong iPhone (bao gom '%s')!%n",
+                            getName(), phoneModelName);
                 } else {
-                    System.out.printf("[OK] TUONG THICH: '%s' vua khit voi man hinh cua dong may '%s'!%n", getName(), phoneModelName);
+                    System.out.printf("[OK] TUONG THICH: '%s' (Hang %s) co dac tinh Type-C / GaN chuan quoc te (USB-PD), sac nhanh an toan cho tat ca cac dong iPhone (bao gom '%s')!%n",
+                            getName(), getBrand(), phoneModelName);
+                }
+                return true;
+            } else if (isSamsungInput) {
+                if (hasSamsungTrait) {
+                    System.out.printf("[OK] TUONG THICH TOI UU: '%s' la cu sac chinh hang Samsung (Super Fast Charging), toi uu cho tat ca cac dong Samsung Galaxy (bao gom '%s')!%n",
+                            getName(), phoneModelName);
+                } else {
+                    System.out.printf("[OK] TUONG THICH: '%s' dung cong nghe Type-C / GaN chuan quoc te, sac nhanh an toan cho cac dong may Samsung (bao gom '%s')!%n",
+                            getName(), phoneModelName);
                 }
                 return true;
             } else {
-                if (isCase) {
-                    System.out.printf("[X] KHONG TUONG THICH: '%s' duoc duc theo khuon may rieng, khong lap vua cho dong may '%s'!%n", getName(), phoneModelName);
-                } else {
-                    System.out.printf("[X] KHONG TUONG THICH: '%s' khong phu hop voi kich thuoc man hinh cua dong may '%s'!%n", getName(), phoneModelName);
-                }
-                return false;
+                System.out.printf("[OK] TUONG THICH: '%s' dung cong nghe Type-C chuan quoc te (USB-PD), tuong thich va sac tot cho '%s'!%n",
+                        getName(), phoneModelName);
+                return true;
             }
         }
 
         // =========================================================================
-        // TRƯỜNG HỢP KHÁC (MẶC ĐỊNH)
+        // TRƯỜNG HỢP 2: TAI NGHE (TAI_NGHE)
+        // Tai nghe Bluetooth (AirPods, Galaxy Buds, Sony, Marshall...) kết nối chuẩn quốc tế.
         // =========================================================================
-        if (getBrand().equalsIgnoreCase("ALL") || phoneLower.contains(getBrand().toLowerCase())) {
+        if ("TAI_NGHE".equals(type)) {
+            if (isIPhoneInput) {
+                if (hasIPhoneTrait) {
+                    System.out.printf("[OK] TUONG THICH TOI UU: '%s' mang dac tinh dong bo he sinh thai Apple, ho tro am thanh khong gian & Pop-up cho tat ca cac dong iPhone (bao gom '%s')!%n",
+                            getName(), phoneModelName);
+                } else {
+                    System.out.printf("[OK] TUONG THICH: '%s' ho tro Bluetooth chuan quoc te, ket noi nghe nhac & dam thoai tot voi '%s'!%n",
+                            getName(), phoneModelName);
+                }
+                return true;
+            } else if (isSamsungInput) {
+                if (hasSamsungTrait) {
+                    System.out.printf("[OK] TUONG THICH TOI UU: '%s' mang dac tinh dong bo Galaxy Wearable, toi uu cho tat ca cac dong Samsung Galaxy (bao gom '%s')!%n",
+                            getName(), phoneModelName);
+                } else {
+                    System.out.printf("[OK] TUONG THICH: '%s' ho tro Bluetooth chuan quoc te, ket noi tot voi '%s'!%n",
+                            getName(), phoneModelName);
+                }
+                return true;
+            } else {
+                System.out.printf("[OK] TUONG THICH: '%s' ho tro Bluetooth chuan quoc te, ket noi tot voi '%s'!%n",
+                        getName(), phoneModelName);
+                return true;
+            }
+        }
+
+        // =========================================================================
+        // TRƯỜNG HỢP 3: ỐP LƯNG (OP_LUNG) & KÍNH CƯỜNG LỰC (CUONG_LUC)
+        // Kiểm tra tính tương thích theo ĐẶC TÍNH DÒNG MÁY (iPhone, Samsung...)
+        // =========================================================================
+        if ("OP_LUNG".equals(type) || "CUONG_LUC".equals(type)) {
+            // A. Phụ kiện có đặc tính dòng iPhone (MagSafe, iPhone, Apple...)
+            if (hasIPhoneTrait) {
+                if (isIPhoneInput) {
+                    if (accName.contains("magsafe")) {
+                        System.out.printf("[OK] TUONG THICH: '%s' so huu dac tinh sac tu tinh MagSafe & thiet ke chuan dong iPhone, hoan toan phu hop voi dong may '%s' (va cac dong iPhone 12, 13, 14, 15, 16)!%n",
+                                getName(), phoneModelName);
+                    } else {
+                        System.out.printf("[OK] TUONG THICH: '%s' mang dac tinh thiet ke chuan cho he sinh thai iPhone, hoan toan phu hop voi dong may '%s' (va cac dong iPhone 12, 13, 14, 15)!%n",
+                                getName(), phoneModelName);
+                    }
+                    return true;
+                } else {
+                    System.out.printf("[X] KHONG TUONG THICH: '%s' mang dac tinh thiet ke rieng cho dong iPhone (Apple), khong phu hop voi dong may '%s' cua hang khac!%n",
+                            getName(), phoneModelName);
+                    return false;
+                }
+            }
+
+            // B. Phụ kiện có đặc tính dòng Samsung (Samsung, Galaxy...)
+            if (hasSamsungTrait) {
+                if (isSamsungInput) {
+                    System.out.printf("[OK] TUONG THICH: '%s' mang dac tinh thiet ke rieng cho he sinh thai Samsung Galaxy, hoan toan phu hop voi dong may '%s' (va toan bo dong Samsung Galaxy)!%n",
+                            getName(), phoneModelName);
+                    return true;
+                } else {
+                    System.out.printf("[X] KHONG TUONG THICH: '%s' mang dac tinh thiet ke rieng cho dong Samsung Galaxy, khong phu hop voi dong may '%s'!%n",
+                            getName(), phoneModelName);
+                    return false;
+                }
+            }
+
+            // C. Phụ kiện chuẩn phổ thông (Kính cường lực KingKong, MiPow...)
+            // Nếu người dùng nhập máy cảm ứng (iPhone, Samsung, Xiaomi...) đều tương thích
+            if (accName.contains(phone) || phone.contains(accName) || isIPhoneInput || isSamsungInput) {
+                System.out.printf("[OK] TUONG THICH: '%s' co dac tinh phu hop voi kich thuoc man hinh cua dong may '%s'!%n",
+                        getName(), phoneModelName);
+                return true;
+            }
+
+            System.out.printf("[X] KHONG TUONG THICH: '%s' khong phu hop voi dong may '%s'!%n", getName(), phoneModelName);
+            return false;
+        }
+
+        // =========================================================================
+        // TRƯỜNG HỢP MẶC ĐỊNH
+        // =========================================================================
+        if (getBrand().equalsIgnoreCase("ALL") || phone.contains(brand)) {
             System.out.printf("[OK] TUONG THICH: '%s' tuong thich tot voi '%s'!%n", getName(), phoneModelName);
             return true;
         }
+
         System.out.printf("[X] CANH BAO: '%s' (Hang %s) co the khong tuong thich tot voi may '%s'!%n", getName(), getBrand(), phoneModelName);
         return false;
     }
