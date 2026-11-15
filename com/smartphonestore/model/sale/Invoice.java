@@ -24,9 +24,9 @@ public class Invoice implements IPrintable {
     public Invoice(String id, String customerId, String salesStaffId, String creationDate,
                double totalAmount, String status, double vatTaxRate, double discountAmount,
                List<InvoiceDetail> details) {
-        if (blank(id)) throw new IllegalArgumentException("Ma hoa don khong duoc trong.");
+        if (blank(id)) throw new IllegalArgumentException("Mã hóa đơn không được trống.");
             if (totalAmount < 0 || vatTaxRate < 0 || vatTaxRate > 1)
-                throw new IllegalArgumentException("Tong tien/VAT khong hop le.");
+                throw new IllegalArgumentException("Tổng tiền/VAT không hợp lệ.");
             this.id = id.trim();
             this.customerId = clean(customerId);
             this.salesStaffId = clean(salesStaffId);
@@ -36,7 +36,7 @@ public class Invoice implements IPrintable {
             this.vatTaxRate = vatTaxRate;
             this.details = details == null ? new ArrayList<>() : new ArrayList<>(details);
         if (discountAmount < 0 || discountAmount > totalAmount)
-            throw new IllegalArgumentException("Tien giam gia khong hop le.");
+            throw new IllegalArgumentException("Tiền giảm giá không hợp lệ.");
         this.discountAmount = discountAmount;
     }
     private static boolean blank(String s) { return s == null || s.trim().isEmpty(); }
@@ -48,20 +48,20 @@ public class Invoice implements IPrintable {
     public void setDetails(List<InvoiceDetail> details) { this.details = details == null ? new ArrayList<>() : new ArrayList<>(details); }
 
     @Override public void printReceipt() {
-        System.out.println("\n================ HOA DON BAN LE ================");
-        System.out.printf("Ma HD: %s%nKhach hang: %s%nNhan vien: %s%nNgay lap: %s%n",
-                id, customerId.isEmpty() ? "Khach le" : customerId, salesStaffId, creationDate);
+        System.out.println("\n================ HÓA ĐƠN BÁN LẺ ================");
+        System.out.printf("Mã HĐ: %s%nKhách hàng: %s%nNhân viên: %s%nNgày lập: %s%n",
+                id, customerId.isEmpty() ? "Khách lẻ" : customerId, salesStaffId, creationDate);
         System.out.println("-------------------------------------------------");
         for (InvoiceDetail d : details) {
             System.out.printf("%s | %s | %,.0f VND%n", d.getProductId(), d.getProductName(), d.getUnitPrice());
             System.out.println("  Serial/IMEI: " + d.getSerialNumber());
         }
-        System.out.printf("Tien hang: %,.0f VND%n", totalAmount);
+        System.out.printf("Tiền hàng: %,.0f VND%n", totalAmount);
         //Chỉ in dòng giảm giá khi khách được giảm
-        if (discountAmount > 0) System.out.printf("Giam gia VIP: -%,.0f VND%n", discountAmount);
-        System.out.printf("VAT (%.0f%%): %,.0f VND%nTONG THANH TOAN: %,.0f VND%n",
+        if (discountAmount > 0) System.out.printf("Giảm giá VIP: -%,.0f VND%n", discountAmount);
+        System.out.printf("VAT (%.0f%%): %,.0f VND%nTỔNG THANH TOÁN: %,.0f VND%n",
             vatTaxRate * 100, calculateVatAmount(), calculateFinalTotal());
-        System.out.println("Trang thai: " + status);
+        System.out.println("Trạng thái: " + status);
         System.out.println("=================================================");
     }
 
@@ -74,7 +74,7 @@ public class Invoice implements IPrintable {
     }
     public static Invoice fromFileString(String line) {
         String[] p = line.split("\\|", -1);
-        if (p.length != 7 && p.length != 8) throw new IllegalArgumentException("Dong hoa don phai co 7 cot hoac 8 cot.");
+        if (p.length != 7 && p.length != 8) throw new IllegalArgumentException("Dòng hóa đơn phải có 7 cột hoặc 8 cột.");
         double discount = p.length == 8 ? Double.parseDouble(p[7]) : 0;   // dòng cũ: không giảm
         return new Invoice(p[0], p[1], p[2], p[3], Double.parseDouble(p[4]), p[5], Double.parseDouble(p[6]),discount,null);
     }

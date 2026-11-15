@@ -11,8 +11,8 @@ public abstract class Payment {
     protected boolean completed;
 
     public Payment(String paymentId, String invoiceId, double amount, String transactionCode) {
-        if (blank(paymentId) || blank(invoiceId)) throw new IllegalArgumentException("Ma thanh toan/hoa don khong duoc trong.");
-        if (amount < 0) throw new IllegalArgumentException("So tien thanh toan khong hop le.");
+        if (blank(paymentId) || blank(invoiceId)) throw new IllegalArgumentException("Mã thanh toán/hóa đơn không được trống.");
+        if (amount < 0) throw new IllegalArgumentException("Số tiền thanh toán không hợp lệ.");
         this.paymentId = paymentId.trim();
         this.invoiceId = invoiceId.trim();
         this.amount = amount;

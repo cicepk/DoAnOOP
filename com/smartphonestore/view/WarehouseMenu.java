@@ -19,28 +19,28 @@ public class WarehouseMenu {
         boolean running = true;
         while (running) {
             System.out.println("\n==============================================================");
-            System.out.println("             MENU NHAN VIEN KHO (THANH VIEN 2)                ");
+            System.out.println("             MENU NHÂN VIÊN KHO (THÀNH VIÊN 2)                ");
             System.out.println("==============================================================");
-            System.out.println(" [1] Xem danh muc toan bo san pham & Ton kho");
-            System.out.println(" [2] Xem bang chi tiet tung con may (Serial/IMEI & Ngay nhap)");
-            System.out.println(" [3] Lap phieu nhap hang vao kho (Nhap lo / Nhap moi)");
-            System.out.println(" [4] Cap nhat thong tin / Gia ban san pham theo Ma ID");
-            System.out.println(" [5] Xoa san pham khoi danh muc kho theo Ma ID");
-            System.out.println(" [6] Tim kiem san pham theo Ten / Thuong hieu");
-            System.out.println(" [7] Canh bao & Loc danh sach hang sap het (isLowStock)");
-            System.out.println(" [8] Ap dung chuong trinh chiet khau san pham (IDiscountable)");
-            System.out.println(" [9] Kiem tra tinh nang doc quyen (Thu cu doi moi / SOS / Tuong thich)");
-            System.out.println(" [0] Thoat (Luu toan bo du lieu)");
+            System.out.println(" [1] Xem danh mục toàn bộ sản phẩm & Tồn kho");
+            System.out.println(" [2] Xem bảng chi tiết từng máy (Serial/IMEI & Ngày nhập)");
+            System.out.println(" [3] Lập phiếu nhập hàng vào kho (Nhập lô / Nhập mới)");
+            System.out.println(" [4] Cập nhật thông tin / Giá bán sản phẩm theo Mã ID");
+            System.out.println(" [5] Xóa sản phẩm khỏi danh mục kho theo Mã ID");
+            System.out.println(" [6] Tìm kiếm sản phẩm theo Tên / Thương hiệu");
+            System.out.println(" [7] Cảnh báo & Lọc danh sách hàng sắp hết (isLowStock)");
+            System.out.println(" [8] Áp dụng chương trình chiết khấu sản phẩm (IDiscountable)");
+            System.out.println(" [9] Kiểm tra tính năng độc quyền (Thu cũ đổi mới / SOS / Tương thích)");
+            System.out.println(" [0] Thoát (Lưu toàn bộ dữ liệu)");
             System.out.println("==============================================================");
 
-            int input = InputHelper.readInt("➤ Chon chuc nang (0-9): ", 0, 9);
+            int input = InputHelper.readInt("➤ Chọn chức năng (0-9): ", 0, 9);
 
             switch (input) {
                 case 1: {
-                    System.out.println("\n========== DANH MUC TOAN BO SAN PHAM TRONG KHO ==========");
+                    System.out.println("\n========== DANH MỤC TOÀN BỘ SẢN PHẨM TRONG KHO ==========");
                     List<Product> list = prd.getALL();
                     if (list.isEmpty()) {
-                        System.out.println("[!] Kho hien dang trong, chua co san pham nao!");
+                        System.out.println("[!] Kho hiện đang trống, chưa có sản phẩm nào!");
                     } else {
                         for (Product p : list) {
                             p.displayInfo();
@@ -54,55 +54,55 @@ public class WarehouseMenu {
                 // CHỨC NĂNG 2: XEM BẢNG CHI TIẾT SẢN PHẨM (THEO HÃNG / MÃ SP)
                 // ==============================================================
                 case 2: {
-                    System.out.println("\n--- XEM BANG CHI TIET TUNG CON MAY TRONG KHO ---");
-                    System.out.println(" [1] Xem tat ca chi tiet con may trong kho");
-                    System.out.println(" [2] Xem chi tiet loc theo Hang (Apple, Samsung, Xiaomi...)");
-                    System.out.println(" [3] Xem chi tiet theo Ma san pham cu the (vi du PRD01)");
-                    System.out.println(" [0] Quay lai Menu chinh");
+                    System.out.println("\n--- XEM BẢNG CHI TIẾT TỪNG MÁY TRONG KHO ---");
+                    System.out.println(" [1] Xem tất cả chi tiết máy trong kho");
+                    System.out.println(" [2] Xem chi tiết lọc theo Hãng (Apple, Samsung, Xiaomi...)");
+                    System.out.println(" [3] Xem chi tiết theo Mã sản phẩm cụ thể (ví dụ PRD01)");
+                    System.out.println(" [0] Quay lại Menu chính");
 
-                    int subChoice = InputHelper.readInt("➤ Chon che do xem (0-3): ", 0, 3);
+                    int subChoice = InputHelper.readInt("➤ Chọn chế độ xem (0-3): ", 0, 3);
                     List<ProductDetail> detailsToShow = new ArrayList<>();
-                    String title = "TAT CA SAN PHAM TRONG KHO";
+                    String title = "TẤT CẢ SẢN PHẨM TRONG KHO";
 
                     if (subChoice == 1) {
                         detailsToShow = prd.getAllProductDetails();
-                        title = "TAT CA CON MAY TRONG KHO";
+                        title = "TẤT CẢ MÁY TRONG KHO";
                     } else if (subChoice == 2) {
-                        String brand = InputHelper.readString("Nhap ten hang muon xem (vi du Apple, Samsung, Xiaomi, Nokia): ");
+                        String brand = InputHelper.readString("Nhập tên hãng muốn xem (ví dụ Apple, Samsung, Xiaomi, Nokia): ");
                         detailsToShow = prd.getDetailsByBrand(brand);
-                        title = "HANG SAN XUAT: " + brand.toUpperCase();
+                        title = "HÃNG SẢN XUẤT: " + brand.toUpperCase();
                     } else if (subChoice == 3) {
-                        String rawId = InputHelper.readString("Nhap ma san pham (vi du PRD01, PRD02): ");
+                        String rawId = InputHelper.readString("Nhập mã sản phẩm (ví dụ PRD01, PRD02): ");
                         String pid = ProductManager.normalizeId(rawId);
                         detailsToShow = prd.getDetailsByProductId(pid);
                         Product p = prd.findByID(pid);
-                        title = "MA SAN PHAM: " + pid.toUpperCase() + (p != null ? " (" + p.getName() + ")" : "");
+                        title = "MÃ SẢN PHẨM: " + pid.toUpperCase() + (p != null ? " (" + p.getName() + ")" : "");
                     } else {
                         break;
                     }
 
                     System.out.println("\n===============================================================================================================================");
-                    System.out.println("                                       BANG CHI TIET CON MAY - " + title);
+                    System.out.println("                                       BẢNG CHI TIẾT TỪNG MÁY - " + title);
                     System.out.println("===============================================================================================================================");
                     System.out.printf(" %-7s │ %-24s │ %-8s │ %-18s │ %-19s │ %-14s │ %-12s │ %-9s%n",
-                            "MA SP", "TEN SAN PHAM", "HANG", "SO SERI / IMEI", "NGAY GIO NHAP", "GIA NHAP", "NHA CUNG CAP", "TRANG THAI");
+                            "MÃ SP", "TÊN SẢN PHẨM", "HÃNG", "SỐ SERI / IMEI", "NGÀY GIỜ NHẬP", "GIÁ NHẬP", "NHÀ CUNG CẤP", "TRẠNG THÁI");
                     System.out.println("────────┼──────────────────────────┼──────────┼────────────────────┼─────────────────────┼────────────────┼──────────────┼──────────");
 
                     if (detailsToShow.isEmpty()) {
-                        System.out.println("  [!] Khong tim thay con may nao phu hop trong du lieu chi tiet.");
+                        System.out.println("  [!] Không tìm thấy máy nào phù hợp trong dữ liệu chi tiết.");
                     } else {
                         int inStockCount = 0;
                         int soldCount = 0;
                         for (ProductDetail d : detailsToShow) {
                             Product p = prd.findByID(d.getProductId());
-                            String pName = p != null ? p.getName() : "Khong xac dinh";
+                            String pName = p != null ? p.getName() : "Không xác định";
                             String pBrand = p != null ? p.getBrand() : "N/A";
                             d.displayRow(pName, pBrand);
                             if ("IN_STOCK".equalsIgnoreCase(d.getStatus())) inStockCount++;
                             else soldCount++;
                         }
                         System.out.println("===============================================================================================================================");
-                        System.out.printf("Tong cong: %d con may (Trong kho: %d | Da xuat ban: %d)%n",
+                        System.out.printf("Tổng cộng: %d máy (Trong kho: %d | Đã xuất bán: %d)%n",
                                 detailsToShow.size(), inStockCount, soldCount);
                     }
                     break;
@@ -113,18 +113,18 @@ public class WarehouseMenu {
                 // ==============================================================
                 case 3: {
                     System.out.println("\n==============================================================");
-                    System.out.println("       LAP PHIEU NHAP HANG VAO KHO (GOODS RECEIPT NOTE)       ");
+                    System.out.println("       LẬP PHIẾU NHẬP HÀNG VÀO KHO (GOODS RECEIPT NOTE)       ");
                     System.out.println("==============================================================");
                     String supplier = "FPT_Synnex";
-                    if (!InputHelper.readYesNo("Su dung Nha cung cap mac dinh 'FPT_Synnex'? (Y/N): ")) {
-                        supplier = InputHelper.readString("Nhap ten Nha cung cap: ");
+                    if (!InputHelper.readYesNo("Sử dụng Nhà cung cấp mặc định 'FPT_Synnex'? (Y/N): ")) {
+                        supplier = InputHelper.readString("Nhập tên Nhà cung cấp: ");
                     }
 
                     String now = DateUtil.nowText();
                     String importDate = now;
-                    if (!InputHelper.readYesNo("Su dung thoi gian nhap kho hien tai (" + now + ")? (Y/N): ")) {
+                    if (!InputHelper.readYesNo("Sử dụng thời gian nhập kho hiện tại (" + now + ")? (Y/N): ")) {
                         while (true) {
-                            String text = InputHelper.readString("Nhap ngay gio nhap kho [dd/MM/yyyy HH:mm:ss]: ");
+                            String text = InputHelper.readString("Nhập ngày giờ nhập kho [dd/MM/yyyy HH:mm:ss]: ");
                             try {
                                 importDate = DateUtil.formatDateTime(DateUtil.parseDateTime(text)); // chi go ngay thi tu dong lay 00:00:00
                                 break;
@@ -141,10 +141,10 @@ public class WarehouseMenu {
                     // VÒNG LẶP WHILE NHẬP HÀNG LIÊN TỤC CHO ĐẾN KHI GÕ 0
                     while (true) {
                         System.out.println("\n--------------------------------------------------------------");
-                        String rawId = InputHelper.readString("➤ Nhap Ma san pham muon nhap (vi du: PRD01, hoac go '0' de dung): ");
+                        String rawId = InputHelper.readString("➤ Nhập Mã sản phẩm muốn nhập (ví dụ: PRD01, hoặc gõ '0' để dừng): ");
 
                         if ("0".equals(rawId)) {
-                            System.out.println("[OK] Ket thuc cac mat hang trong phieu nhap!");
+                            System.out.println("[OK] Kết thúc các mặt hàng trong phiếu nhập!");
                             break;
                         }
 
@@ -153,16 +153,16 @@ public class WarehouseMenu {
 
                         if (p != null) {
                             // TRƯỜNG HỢP 1: SẢN PHẨM ĐÃ CÓ TRONG KHO
-                            System.out.printf(">> [SAN PHAM CO SAN]: %s | Hang: %s | Ton hien tai: %d chiec%n",
+                            System.out.printf(">> [SẢN PHẨM CÓ SẴN]: %s | Hãng: %s | Tồn hiện tại: %d chiếc%n",
                                      p.getName(), p.getBrand(), p.getStockQuantity());
 
-                            int qty = InputHelper.readInt("Nhap so luong hang moi ve: ", 1, 100000);
-                            double importPrice = InputHelper.readDouble("Nhap gia nhap moi chiec (VND): ", 1);
+                            int qty = InputHelper.readInt("Nhập số lượng hàng mới về: ", 1, 100000);
+                            double importPrice = InputHelper.readDouble("Nhập giá nhập mỗi chiếc (VND): ", 1);
 
                             // Nhập số IMEI/Seri cho từng máy trong lô
                             List<ProductDetail> batchDetails = new ArrayList<>();
                             Set<String> batchSerials = new HashSet<>(); // serial da nhap trong lo nay
-                            boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
+                            boolean autoSn = InputHelper.readYesNo(String.format("Bạn có muốn tự động sinh Seri/IMEI cho cả lô %d máy không? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
                                 if (autoSn) {
@@ -170,12 +170,12 @@ public class WarehouseMenu {
                                     do { // sinh lai toi khi khong trung kho va khong trung lo
                                         serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", k++);
                                     } while (prd.isSerialExists(serial) || batchSerials.contains(serial));
-                                    System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
+                                    System.out.printf(" - Máy [%d/%d] -> Tự động cấp IMEI: %s%n", i, qty, serial);
                                 } else {
                                     while (true) {
-                                        serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
+                                        serial = InputHelper.readString(String.format(" - Seri/IMEI máy [%d/%d]: ", i, qty)).toUpperCase();
                                         if (prd.isSerialExists(serial) || batchSerials.contains(serial)) {
-                                            System.out.println("   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
+                                            System.out.println("   [X] Seri/IMEI này đã có trong kho hoặc trong lô đang nhập! Vui lòng nhập lại.");
                                             continue;
                                         }
                                         break;
@@ -192,69 +192,69 @@ public class WarehouseMenu {
                             sessionTotalQty += qty;
                             sessionTotalCost += (qty * importPrice);
 
-                            System.out.printf("[OK] Nhap them thanh cong %d chiec '%s'! Ton kho moi: %d chiec%n",
+                            System.out.printf("[OK] Nhập thêm thành công %d chiếc '%s'! Tồn kho mới: %d chiếc%n",
                                     qty, p.getName(), p.getStockQuantity());
 
                         } else {
                             // TRƯỜNG HỢP 2: SẢN PHẨM MỚI TOANH CHƯA CÓ TRONG KHO
                             if (!id.matches("^PRD\\d{2,}$")) {
                                 String autoId = prd.generateNextID();
-                                System.out.printf(">> [THONG TIN]: Ma '%s' chua dung chuan 'PRDxx'. He thong tu dong cap ma: %s%n", id, autoId);
+                                System.out.printf(">> [THÔNG TIN]: Mã '%s' chưa đúng chuẩn 'PRDxx'. Hệ thống tự động cấp mã: %s%n", id, autoId);
                                 id = autoId;
                             }
 
-                            System.out.printf(">> [SAN PHAM MOI]: Ma '%s' chua tung co trong kho!%n", id);
-                            boolean confirm = InputHelper.readYesNo("Ban co muon khai bao san pham moi nay luon khong? (Y/N): ");
+                            System.out.printf(">> [SẢN PHẨM MỚI]: Mã '%s' chưa từng có trong kho!%n", id);
+                            boolean confirm = InputHelper.readYesNo("Bạn có muốn khai báo sản phẩm mới này luôn không? (Y/N): ");
                             if (!confirm) {
-                                System.out.println("[!] Bo qua ma nay.");
+                                System.out.println("[!] Bỏ qua mã này.");
                                 continue;
                             }
 
-                            System.out.println("\n--- KHAI BAO THONG SO SAN PHAM MOI ---");
-                            System.out.println("Chon dong san pham:");
-                            System.out.println(" [1] Smartphone (Dien thoai thong minh)");
-                            System.out.println(" [2] Featurephone (Dien thoai pho thong)");
-                            System.out.println(" [3] Accessory (Phu kien)");
-                            int typeChoice = InputHelper.readInt("Chon (1-3): ", 1, 3);
+                            System.out.println("\n--- KHAI BÁO THÔNG SỐ SẢN PHẨM MỚI ---");
+                            System.out.println("Chọn dòng sản phẩm:");
+                            System.out.println(" [1] Smartphone (Điện thoại thông minh)");
+                            System.out.println(" [2] Featurephone (Điện thoại phổ thông)");
+                            System.out.println(" [3] Accessory (Phụ kiện)");
+                            int typeChoice = InputHelper.readInt("Chọn (1-3): ", 1, 3);
 
-                            String name = InputHelper.readString("Nhap ten san pham: ");
-                            String brand = InputHelper.readString("Nhap hang san xuat (Apple, Samsung, Xiaomi...): ");
-                            double sellPrice = InputHelper.readDouble("Nhap gia ban niem yet cho khach (VND): ", 1);
-                            int threshold = InputHelper.readInt("Nhap nguong canh bao ton kho toi thieu: ", 0, 10000);
-                            int qty = InputHelper.readInt("Nhap so luong nhap lo dau tien: ", 1, 100000);
-                            double importPrice = InputHelper.readDouble("Nhap gia nhap von moi chiec (VND): ", 1);
+                            String name = InputHelper.readString("Nhập tên sản phẩm: ");
+                            String brand = InputHelper.readString("Nhập hãng sản xuất (Apple, Samsung, Xiaomi...): ");
+                            double sellPrice = InputHelper.readDouble("Nhập giá bán niêm yết cho khách (VND): ", 1);
+                            int threshold = InputHelper.readInt("Nhập ngưỡng cảnh báo tồn kho tối thiểu: ", 0, 10000);
+                            int qty = InputHelper.readInt("Nhập số lượng nhập lô đầu tiên: ", 1, 100000);
+                            double importPrice = InputHelper.readDouble("Nhập giá nhập vốn mỗi chiếc (VND): ", 1);
 
                             Product newProduct = null;
                             try {
                                 if (typeChoice == 1) {
-                                    String os = InputHelper.readString("Nhap he dieu hanh (iOS / Android): ");
-                                    int storage = InputHelper.readInt("Nhap dung luong ROM (GB, vi du 128, 256): ", 1, 2048);
+                                    String os = InputHelper.readString("Nhập hệ điều hành (iOS / Android): ");
+                                    int storage = InputHelper.readInt("Nhập dung lượng ROM (GB, ví dụ 128, 256): ", 1, 2048);
                                     newProduct = new Smartphone(id, name, brand, sellPrice, qty, threshold, os, storage);
                                 } else if (typeChoice == 2) {
-                                    int battery = InputHelper.readInt("Nhap thoi luong pin cho (so ngay, vi du 7, 10): ", 1, 60);
+                                    int battery = InputHelper.readInt("Nhập thời lượng pin chờ (số ngày, ví dụ 7, 10): ", 1, 60);
                                     newProduct = new Featurephone(id, name, brand, sellPrice, qty, threshold, "KaiOS", battery);
                                 } else {
                                     String accType;
                                     while (true) {
-                                        accType = InputHelper.readString("Nhap loai phu kien (SAC, TAI_NGHE, OP_LUNG, CUONG_LUC): ").toUpperCase();
+                                        accType = InputHelper.readString("Nhập loại phụ kiện (SAC, TAI_NGHE, OP_LUNG, CUONG_LUC): ").toUpperCase();
                                         if (accType.matches("^(SAC|TAI_NGHE|OP_LUNG|CUONG_LUC)$")) break;
-                                        System.out.println("[X] Chi duoc chon: SAC, TAI_NGHE, OP_LUNG hoac CUONG_LUC!");
+                                        System.out.println("[X] Chỉ được chọn: SAC, TAI_NGHE, OP_LUNG hoặc CUONG_LUC!");
                                     }
                                     newProduct = new Accessory(id, name, brand, sellPrice, qty, threshold, accType);
                                 }
                             } catch (ValidationException ve) {
                                 System.out.println(ve.getMessage());
-                                System.out.println("[X] Tao san pham moi that bai do loi hop le!");
+                                System.out.println("[X] Tạo sản phẩm mới thất bại do dữ liệu không hợp lệ!");
                                 continue;
                             } catch (Exception ex) {
-                                System.out.println("[X] Loi khi khoi tao san pham: " + ex.getMessage());
+                                System.out.println("[X] Lỗi khi khởi tạo sản phẩm: " + ex.getMessage());
                                 continue;
                             }
 
                             // Nhập danh sách IMEI/Seri cho sản phẩm mới
                             List<ProductDetail> batchDetails = new ArrayList<>();
                             Set<String> batchSerials = new HashSet<>(); // serial da nhap trong lo nay
-                            boolean autoSn = InputHelper.readYesNo(String.format("Ban co muon tu dong sinh Seri/IMEI cho ca lo %d may khong? (Y/N): ", qty));
+                            boolean autoSn = InputHelper.readYesNo(String.format("Bạn có muốn tự động sinh Seri/IMEI cho cả lô %d máy không? (Y/N): ", qty));
                             for (int i = 1; i <= qty; i++) {
                                 String serial;
                                 if (autoSn) {
@@ -262,12 +262,12 @@ public class WarehouseMenu {
                                     do { // sinh lai toi khi khong trung kho va khong trung lo
                                         serial = "IMEI" + id.replace("PRD", "") + (System.currentTimeMillis() % 1000000) + String.format("%02d", k++);
                                     } while (prd.isSerialExists(serial) || batchSerials.contains(serial));
-                                    System.out.printf(" - May [%d/%d] -> Tu dong cap IMEI: %s%n", i, qty, serial);
+                                    System.out.printf(" - Máy [%d/%d] -> Tự động cấp IMEI: %s%n", i, qty, serial);
                                 } else {
                                     while (true) {
-                                        serial = InputHelper.readString(String.format(" - Seri/IMEI may [%d/%d]: ", i, qty)).toUpperCase();
+                                        serial = InputHelper.readString(String.format(" - Seri/IMEI máy [%d/%d]: ", i, qty)).toUpperCase();
                                         if (prd.isSerialExists(serial) || batchSerials.contains(serial)) {
-                                            System.out.println("   [X] Seri/IMEI nay da co trong kho hoac trong lo dang nhap! Vui long nhap lai.");
+                                            System.out.println("   [X] Seri/IMEI này đã có trong kho hoặc trong lô đang nhập! Vui lòng nhập lại.");
                                             continue;
                                         }
                                         break;
@@ -284,9 +284,9 @@ public class WarehouseMenu {
                                 sessionItemCount++;
                                 sessionTotalQty += qty;
                                 sessionTotalCost += (qty * importPrice);
-                                System.out.printf("[OK] Da tao thanh cong san pham moi '%s' (Ma: %s) va luu %d con may vao kho!%n", name, id, qty);
+                                System.out.printf("[OK] Đã tạo thành công sản phẩm mới '%s' (Mã: %s) và lưu %d máy vào kho!%n", name, id, qty);
                             } else {
-                                System.out.println("[X] Loi khi luu san pham moi!");
+                                System.out.println("[X] Lỗi khi lưu sản phẩm mới!");
                             }
                         }
                     }
@@ -294,85 +294,85 @@ public class WarehouseMenu {
                     // TỔNG KẾT PHIẾU NHẬP SAU KHI THOÁT VÒNG LẶP WHILE
                     if (sessionTotalQty > 0) {
                         System.out.println("\n==============================================================");
-                        System.out.println("       BIEN BAN TONG KET PHIEU NHAP HANG (GOODS RECEIPT)      ");
+                        System.out.println("       BIÊN BẢN TỔNG KẾT PHIẾU NHẬP HÀNG (GOODS RECEIPT)      ");
                         System.out.println("==============================================================");
-                        System.out.println(" Nha cung cap  : " + supplier);
-                        System.out.println(" Ngay nhap     : " + importDate);
-                        System.out.println(" So dong mat hang: " + sessionItemCount + " dong");
-                        System.out.println(" Tong so may nhap: " + sessionTotalQty + " chiec");
-                        System.out.printf(" Tong tien nhap: %,.0f VND%n", sessionTotalCost);
+                        System.out.println(" Nhà cung cấp  : " + supplier);
+                        System.out.println(" Ngày nhập     : " + importDate);
+                        System.out.println(" Số dòng mặt hàng: " + sessionItemCount + " dòng");
+                        System.out.println(" Tổng số máy nhập: " + sessionTotalQty + " chiếc");
+                        System.out.printf(" Tổng tiền nhập: %,.0f VND%n", sessionTotalCost);
                         System.out.println("==============================================================");
-                        System.out.println("[OK] Du lieu da duoc dong bo vao 'products.txt' va 'product_details.txt'!");
+                        System.out.println("[OK] Dữ liệu đã được đồng bộ vào 'products.txt' và 'product_details.txt'!");
                     } else {
-                        System.out.println("[!] Khong co san pham nao duoc nhap trong phien nay.");
+                        System.out.println("[!] Không có sản phẩm nào được nhập trong phiên này.");
                     }
                     break;
                 }
 
                 case 4: {
-                    System.out.println("\n--- CAP NHAT THONG TIN / GIA BAN SAN PHAM ---");
-                    String rawId = InputHelper.readString("Nhap ma ID san pham can sua (vi du PRD01): ");
+                    System.out.println("\n--- CẬP NHẬT THÔNG TIN / GIÁ BÁN SẢN PHẨM ---");
+                    String rawId = InputHelper.readString("Nhập mã ID sản phẩm cần sửa (ví dụ PRD01): ");
                     String id = ProductManager.normalizeId(rawId);
                     Product p = prd.findByID(id);
                     if (p == null) {
-                        System.out.println("[X] Khong tim thay san pham co ma: " + id);
+                        System.out.println("[X] Không tìm thấy sản phẩm có mã: " + id);
                     } else {
-                        System.out.println("Thong tin hien tai:");
+                        System.out.println("Thông tin hiện tại:");
                         p.displayInfo();
                         String newName = p.getName();
-                        if (InputHelper.readYesNo("Ban co muon doi ten san pham khong? (Y/N): ")) {
-                            newName = InputHelper.readString("Nhap ten moi: ");
+                        if (InputHelper.readYesNo("Bạn có muốn đổi tên sản phẩm không? (Y/N): ")) {
+                            newName = InputHelper.readString("Nhập tên mới: ");
                         }
 
-                        double inputPrice = InputHelper.readDouble("Nhap gia moi (nhap 0 neu giu nguyen): ", 0);
+                        double inputPrice = InputHelper.readDouble("Nhập giá mới (nhập 0 nếu giữ nguyên): ", 0);
                         double newPrice = (inputPrice == 0) ? p.getPrice() : inputPrice;
 
-                        int inputThreshold = InputHelper.readInt("Nhap nguong ton kho moi (nhap -1 neu giu nguyen): ", -1, 10000);
+                        int inputThreshold = InputHelper.readInt("Nhập ngưỡng tồn kho mới (nhập -1 nếu giữ nguyên): ", -1, 10000);
                         int newThreshold = (inputThreshold == -1) ? p.getMinStockThreshold() : inputThreshold;
 
                         boolean ok = prd.updateProductInfo(p.getId(), newName, newPrice, newThreshold);
                         if (ok) {
-                            System.out.println("[OK] Cap nhat thong tin san pham thanh cong!");
+                            System.out.println("[OK] Cập nhật thông tin sản phẩm thành công!");
                         } else {
-                            System.out.println("[X] Cap nhat that bai!");
+                            System.out.println("[X] Cập nhật thất bại!");
                         }
                     }
                     break;
                 }
 
                 case 5: {
-                    System.out.println("\n--- XOA SAN PHAM KHOI KHO THEO MA ID ---");
-                    String rawId = InputHelper.readString("Nhap ma ID san pham can xoa: ");
+                    System.out.println("\n--- XÓA SẢN PHẨM KHỎI KHO THEO MÃ ID ---");
+                    String rawId = InputHelper.readString("Nhập mã ID sản phẩm cần xóa: ");
                     String id = ProductManager.normalizeId(rawId);
                     Product p = prd.findByID(id);
                     if (p == null) {
-                        System.out.println("[X] Khong tim thay san pham co ma: " + id);
+                        System.out.println("[X] Không tìm thấy sản phẩm có mã: " + id);
                     } else {
-                        System.out.println("San pham muon xoa:");
+                        System.out.println("Sản phẩm muốn xóa:");
                         p.displayInfo();
-                        boolean confirm = InputHelper.readYesNo("Ban co chac chan muon xoa khong? (Y/N): ");
+                        boolean confirm = InputHelper.readYesNo("Bạn có chắc chắn muốn xóa không? (Y/N): ");
                         if (confirm) {
                             boolean deleted = prd.deleteID(p.getId());
                             if (deleted) {
-                                System.out.println("[OK] Da xoa san pham va toan bo chi tiet may lien quan khoi kho!");
+                                System.out.println("[OK] Đã xóa sản phẩm và toàn bộ chi tiết máy liên quan khỏi kho!");
                             } else {
-                                System.out.println("[X] Xoa that bai!");
+                                System.out.println("[X] Xóa thất bại!");
                             }
                         } else {
-                            System.out.println("[!] Da huy thao tac xoa.");
+                            System.out.println("[!] Đã hủy thao tác xóa.");
                         }
                     }
                     break;
                 }
 
                 case 6: {
-                    System.out.println("\n--- TIM KIEM SAN PHAM THEO TEN / THUONG HIEU ---");
-                    String keyword = InputHelper.readString("Nhap tu khoa tim kiem (Ten may hoac Ten hang): ");
+                    System.out.println("\n--- TÌM KIẾM SẢN PHẨM THEO TÊN / THƯƠNG HIỆU ---");
+                    String keyword = InputHelper.readString("Nhập từ khóa tìm kiếm (Tên máy hoặc Tên hãng): ");
                     List<Product> results = prd.findByNameOrBrand(keyword);
                     if (results.isEmpty()) {
-                        System.out.println("[!] Khong tim thay san pham nao khop voi tu khoa: " + keyword);
+                        System.out.println("[!] Không tìm thấy sản phẩm nào khớp với từ khóa: " + keyword);
                     } else {
-                        System.out.printf("Tim thay %d san pham phu hop:%n", results.size());
+                        System.out.printf("Tìm thấy %d sản phẩm phù hợp:%n", results.size());
                         for (Product p : results) {
                             p.displayInfo();
                         }
@@ -381,12 +381,12 @@ public class WarehouseMenu {
                 }
 
                 case 7: {
-                    System.out.println("\n--- CANH BAO: DANH SACH SAN PHAM SAP HET HANG ---");
+                    System.out.println("\n--- CẢNH BÁO: DANH SÁCH SẢN PHẨM SẮP HẾT HÀNG ---");
                     List<Product> lowStock = prd.getLowStockProducts();
                     if (lowStock.isEmpty()) {
-                        System.out.println("[OK] Ton kho an toan! Hien khong co san pham nao cham nguong het hang.");
+                        System.out.println("[OK] Tồn kho an toàn! Hiện không có sản phẩm nào chạm ngưỡng hết hàng.");
                     } else {
-                        System.out.printf("[!] CO %d SAN PHAM DANG CHAM HOAC DUOI NGUONG BAO DONG:%n", lowStock.size());
+                        System.out.printf("[!] CÓ %d SẢN PHẨM ĐANG CHẠM HOẶC DƯỚI NGƯỠNG BÁO ĐỘNG:%n", lowStock.size());
                         for (Product p : lowStock) {
                             p.displayInfo();
                         }
@@ -395,31 +395,31 @@ public class WarehouseMenu {
                 }
 
                 case 8: {
-                    System.out.println("\n--- TINH GIA CHIET KHAU KHUYEN MAI (IDiscountable) ---");
-                    String rawId = InputHelper.readString("Nhap ma ID san pham muon tinh giam gia: ");
+                    System.out.println("\n--- TÍNH GIÁ CHIẾT KHẤU KHUYẾN MÃI (IDiscountable) ---");
+                    String rawId = InputHelper.readString("Nhập mã ID sản phẩm muốn tính giảm giá: ");
                     String id = ProductManager.normalizeId(rawId);
                     Product p = prd.findByID(id);
                     if (p == null) {
-                        System.out.println("[X] Khong tim thay san pham co ma: " + id);
+                        System.out.println("[X] Không tìm thấy sản phẩm có mã: " + id);
                     } else if (!(p instanceof IDiscountable)) {
-                        System.out.println("[!] San pham nay (Featurephone) khong ho tro chiet khau IDiscountable!");
+                        System.out.println("[!] Sản phẩm này (Featurephone) không hỗ trợ chiết khấu IDiscountable!");
                     } else {
-                        System.out.printf("San pham: %s | Gia goc: %,.0f VND%n", p.getName(), p.getPrice());
-                        double rate = InputHelper.readDouble("Nhap ty le chiet khau (vi du 0.1 cho 10%, 0.2 cho 20%): ", 0.0, 1.0);
+                        System.out.printf("Sản phẩm: %s | Giá gốc: %,.0f VND%n", p.getName(), p.getPrice());
+                        double rate = InputHelper.readDouble("Nhập tỷ lệ chiết khấu (ví dụ 0.1 cho 10%, 0.2 cho 20%): ", 0.0, 1.0);
 
                         // [TC08] Trước đây gọi ngay prd.applyDiscount(): hàm này setPrice + saveToFile,
                         // nên giá gốc bị ghi đè và lần sau giảm chồng lên giá đã giảm
                         // (29.990.000 -> 26.991.000 -> 24.291.900).
                         // Giờ: chỉ TÍNH thử giá sau giảm (đa hình qua IDiscountable), hỏi Y/N rồi mới lưu.
                         double preview = ((IDiscountable) p).calculateDiscountedPrice(rate);
-                        System.out.printf("Gia sau giam %.0f%%: %,.0f VND%n", rate * 100, preview);
+                        System.out.printf("Giá sau giảm %.0f%%: %,.0f VND%n", rate * 100, preview);
                         if (preview <= 0 || preview == p.getPrice()) {
-                            System.out.println("[X] Khong ap dung duoc chiet khau!");
-                        } else if (InputHelper.readYesNo("Luu gia moi nay vao 'products.txt'? (Y/N): ")) {
+                            System.out.println("[X] Không áp dụng được chiết khấu!");
+                        } else if (InputHelper.readYesNo("Lưu giá mới này vào 'products.txt'? (Y/N): ")) {
                             prd.applyDiscount(p.getId(), rate);   // [TC08] chỉ đổi giá khi người dùng đồng ý
-                            System.out.printf("[OK] Gia moi cua '%s': %,.0f VND (Da dong bo vao 'products.txt')%n", p.getName(), p.getPrice());
+                            System.out.printf("[OK] Giá mới của '%s': %,.0f VND (Đã đồng bộ vào 'products.txt')%n", p.getName(), p.getPrice());
                         } else {
-                            System.out.println("[OK] Chi xem thu, gia ban giu nguyen.");
+                            System.out.println("[OK] Chỉ xem thử, giá bán giữ nguyên.");
                         }
                     }
                     break;
@@ -429,78 +429,78 @@ public class WarehouseMenu {
                 // CASE 9: TEST TÍNH NĂNG ĐỘC QUYỀN
                 // ==========================================
                 case 9: {
-                    System.out.println("\n--- KIEM TRA TINH NANG DOC QUYEN CUA TUNG DONG SAN PHAM ---");
-                    System.out.println(" [1] Thu cu doi moi (applyTradeInDiscount: Giam 10% cho Smartphone)");
-                    System.out.println(" [2] Bat / Tat che do khan cap SOS (toggleEmergencySOS cho Featurephone)");
-                    System.out.println(" [3] Kiem tra Phu kien co tuong thich voi dien thoai khong (isCompatibleWith)");
-                    System.out.println(" [0] Quay lai Menu chinh");
+                    System.out.println("\n--- KIỂM TRA TÍNH NĂNG ĐỘC QUYỀN CỦA TỪNG DÒNG SẢN PHẨM ---");
+                    System.out.println(" [1] Thu cũ đổi mới (applyTradeInDiscount: Giảm 10% cho Smartphone)");
+                    System.out.println(" [2] Bật / Tắt chế độ khẩn cấp SOS (toggleEmergencySOS cho Featurephone)");
+                    System.out.println(" [3] Kiểm tra Phụ kiện có tương thích với điện thoại không (isCompatibleWith)");
+                    System.out.println(" [0] Quay lại Menu chính");
 
-                    int subChoice = InputHelper.readInt("➤ Chon tinh nang muon test (0-3): ", 0, 3);
+                    int subChoice = InputHelper.readInt("➤ Chọn tính năng muốn test (0-3): ", 0, 3);
                     switch (subChoice) {
                         case 1: {
-                            System.out.println("\n>> TEST: THU CU DOI MOI (applyTradeInDiscount)");
-                            String rawId = InputHelper.readString("Nhap ma ID Smartphone (vi du PRD01, PRD02): ");
+                            System.out.println("\n>> TEST: THU CŨ ĐỔI MỚI (applyTradeInDiscount)");
+                            String rawId = InputHelper.readString("Nhập mã ID Smartphone (ví dụ PRD01, PRD02): ");
                             String id = ProductManager.normalizeId(rawId);
                             Product p = prd.findByID(id);
                             if (p == null) {
-                                System.out.println("[X] Khong tim thay san pham co ma: " + id);
+                                System.out.println("[X] Không tìm thấy sản phẩm có mã: " + id);
                             } else if (!(p instanceof Smartphone)) {
-                                System.out.println("[X] San pham nay khong phai la Smartphone!");
+                                System.out.println("[X] Sản phẩm này không phải là Smartphone!");
                             } else {
                                 Smartphone sp = (Smartphone) p;
-                                System.out.printf("Dien thoai: %s | Gia niem yet: %,.0f VND%n", sp.getName(), sp.getPrice());
+                                System.out.printf("Điện thoại: %s | Giá niêm yết: %,.0f VND%n", sp.getName(), sp.getPrice());
                                 double tradeInPrice = sp.applyTradeInDiscount();
-                                System.out.printf("[OK] Gia sau khi tro gia Thu cu doi moi (giam 10%%): %,.0f VND%n", tradeInPrice);
+                                System.out.printf("[OK] Giá sau khi trợ giá Thu cũ đổi mới (giảm 10%%): %,.0f VND%n", tradeInPrice);
                             }
                             break;
                         }
 
                         case 2: {
-                            System.out.println("\n>> TEST: PHIM KHAN CAP SOS (toggleEmergencySOS)");
-                            String rawId = InputHelper.readString("Nhap ma ID Featurephone (vi du PRD04, PRD05): ");
+                            System.out.println("\n>> TEST: PHÍM KHẨN CẤP SOS (toggleEmergencySOS)");
+                            String rawId = InputHelper.readString("Nhập mã ID Featurephone (ví dụ PRD26, PRD27): ");
                             String id = ProductManager.normalizeId(rawId);
                             Product p = prd.findByID(id);
                             if (p == null) {
-                                System.out.println("[X] Khong tim thay san pham co ma: " + id);
+                                System.out.println("[X] Không tìm thấy sản phẩm có mã: " + id);
                             } else if (!(p instanceof Featurephone)) {
-                                System.out.println("[X] San pham nay khong phai la Dien thoai pho thong (Featurephone)!");
+                                System.out.println("[X] Sản phẩm này không phải là Điện thoại phổ thông (Featurephone)!");
                             } else {
                                 Featurephone fp = (Featurephone) p;
-                                System.out.printf("Dien thoai: %s | Trang thai SOS hien tai: %s%n",
-                                        fp.getName(), fp.isSosModeEnable() ? "BAT" : "TAT");
-                                System.out.println(">> Thuc hien dao trang thai phim SOS:");
+                                System.out.printf("Điện thoại: %s | Trạng thái SOS hiện tại: %s%n",
+                                        fp.getName(), fp.isSosModeEnable() ? "BẬT" : "TẮT");
+                                System.out.println(">> Thực hiện đảo trạng thái phím SOS:");
                                 fp.toggleEmergencySOS();
                             }
                             break;
                         }
 
                         case 3: {
-                            System.out.println("\n>> TEST: TUONG THICH PHU KIEN (isCompatibleWith)");
-                            String rawId = InputHelper.readString("Nhap ma ID Phu kien (vi du PRD38, PRD39, PRD41): ");
+                            System.out.println("\n>> TEST: TƯƠNG THÍCH PHỤ KIỆN (isCompatibleWith)");
+                            String rawId = InputHelper.readString("Nhập mã ID Phụ kiện (ví dụ PRD38, PRD39, PRD41): ");
                             String id = ProductManager.normalizeId(rawId);
                             Product p = prd.findByID(id);
                             if (p == null) {
-                                System.out.println("[X] Khong tim thay phu kien co ma: " + id);
+                                System.out.println("[X] Không tìm thấy phụ kiện có mã: " + id);
                             } else if (!(p instanceof Accessory)) {
-                                System.out.println("[X] San pham nay khong phai la Phu kien (Accessory)!");
+                                System.out.println("[X] Sản phẩm này không phải là Phụ kiện (Accessory)!");
                             } else {
                                 Accessory acc = (Accessory) p;
-                                System.out.printf("Phu kien: %s (Loai: %s)%n", acc.getName(), acc.getAccessoryType());
-                                String phoneName = InputHelper.readString("Nhap ten dong dien thoai muon kiem tra (vi du: iPhone 15, Samsung S24): ");
+                                System.out.printf("Phụ kiện: %s (Loại: %s)%n", acc.getName(), acc.getAccessoryType());
+                                String phoneName = InputHelper.readString("Nhập tên dòng điện thoại muốn kiểm tra (ví dụ: iPhone 15, Samsung S24): ");
                                 acc.isCompatibleWith(phoneName);
                             }
                             break;
                         }
 
                         case 0:
-                            System.out.println("[!] Quay lai Menu chinh.");
+                            System.out.println("[!] Quay lại Menu chính.");
                             break;
                     }
                     break;
                 }
 
                 case 0:
-                    System.out.println("\n[OK] Dang luu toan bo du lieu vao file va thoat Menu Kho...");
+                    System.out.println("\n[OK] Đang lưu toàn bộ dữ liệu vào file và thoát Menu Kho...");
                     prd.saveToFile();
                     prd.saveDetailsToFile();
                     running = false;

@@ -14,7 +14,7 @@ public class Accessory extends Product implements IDiscountable {
     //Phương thức kiểm tra phụ kiện có tương thích với điện thoại không
     public boolean isCompatibleWith(String phoneModelName) {
         if (phoneModelName == null || phoneModelName.trim().isEmpty()) {
-            System.out.println("[X] Ten dong may khong duoc de trong!");
+            System.out.println("[X] Tên dòng máy không được để trống!");
             return false;
         }
         String phoneLower = phoneModelName.toLowerCase();//chuyển về chữ thường
@@ -22,35 +22,35 @@ public class Accessory extends Product implements IDiscountable {
         // TRƯỜNG HỢP 1: Ốp lưng hoặc Kính cường lực -> Bắt buộc phải khớp đúng dòng máy
         if ("OP_LUNG".equalsIgnoreCase(accessoryType) || "CUONG_LUC".equalsIgnoreCase(accessoryType)) {
             if (accessoryNameLower.contains(phoneLower)) {
-                System.out.printf("[OK] TUONG THICH: '%s' vua khit voi dong may '%s'!%n", getName(), phoneModelName);
+                System.out.printf("[OK] TƯƠNG THÍCH: '%s' vừa khít với dòng máy '%s'!%n", getName(), phoneModelName);
                 return true;
             } else {
-                System.out.printf("[X] KHONG TUONG THICH: '%s' khong lap vua cho dong may '%s'!%n", getName(), phoneModelName);
+                System.out.printf("[X] KHÔNG TƯƠNG THÍCH: '%s' không lắp vừa cho dòng máy '%s'!%n", getName(), phoneModelName);
                 return false;
             }
         }
     
         // TRƯỜNG HỢP 2: CỦ SẠC HOẶC TAI NGHE (SAC, TAI_NGHE)
         if (getBrand().equalsIgnoreCase("ALL")) {
-            System.out.printf("[OK] TUONG THICH: '%s' la phu kien chuan da nang, dung tot cho moi dong may!%n", getName());
+            System.out.printf("[OK] TƯƠNG THÍCH: '%s' là phụ kiện chuẩn đa năng, dùng tốt cho mọi dòng máy!%n", getName());
             return true;
         }
         if (phoneLower.contains(getBrand().toLowerCase())) {
-            System.out.printf("[OK] TUONG THICH: Cung he sinh thai thuong hieu '%s'!%n", getBrand());
+            System.out.printf("[OK] TƯƠNG THÍCH: Cùng hệ sinh thái thương hiệu '%s'!%n", getBrand());
             return true;
         }
         if (accessoryNameLower.contains("type-c")) {
-            System.out.printf("[OK] TUONG THICH: '%s' dung cong Type-C chuan quoc te, cam vua cho '%s'!%n", getName(), phoneModelName);
+            System.out.printf("[OK] TƯƠNG THÍCH: '%s' dùng cổng Type-C chuẩn quốc tế, cắm vừa cho '%s'!%n", getName(), phoneModelName);
             return true;
         }
-        System.out.printf("[X] CANH BAO: '%s' (Hang %s) co the khong tuong thich tot voi may '%s'!%n", getName(), getBrand(), phoneModelName);
+        System.out.printf("[X] CẢNH BÁO: '%s' (Hãng %s) có thể không tương thích tốt với máy '%s'!%n", getName(), getBrand(), phoneModelName);
         return false; 
     }
 
     //Nạp chồng (Overloading): Cho phép truyền thẳng đối tượng Phone vào kiểm tra
     public boolean isCompatibleWith(Phone phone) {
         if (phone == null) {
-            System.out.println("[X] Doi tuong dien thoai truyen vao bi null!");
+            System.out.println("[X] Đối tượng điện thoại truyền vào bị null!");
             return false;
         }
         return isCompatibleWith(phone.getName());
@@ -64,7 +64,7 @@ public class Accessory extends Product implements IDiscountable {
     @Override
     public double calculateDiscountedPrice(double discountRate) {
         if (discountRate < 0.0 || discountRate > 0.5) {
-            System.out.println("[!] Phu kien chi duoc phep giam gia toi da 50% (0.0 -> 0.5)!");
+            System.out.println("[!] Phụ kiện chỉ được phép giảm giá tối đa 50% (0.0 -> 0.5)!");
             return getPrice();
         }
         double finalPrice = getPrice() * (1 - discountRate);
@@ -83,9 +83,9 @@ public class Accessory extends Product implements IDiscountable {
 
     @Override
     public void displayInfo() {
-        System.out.printf("[PHU KIEN]   ID: %-6s | Ten: %-26s | Hang: %-10s | Gia: %,12.0f d | Ton: %-3d | Loai: %-9s%s%n",
+        System.out.printf("[PHỤ KIỆN]   ID: %-6s | Tên: %-26s | Hãng: %-10s | Giá: %,12.0f đ | Tồn: %-3d | Loại: %-9s%s%n",
                 getId(), getName(), getBrand(), getPrice(), getStockQuantity(), getAccessoryType(),
-                isLowStock() ? " [SAP HET HANG]" : "");
+                isLowStock() ? " [SẮP HẾT HÀNG]" : "");
     }
 
     public String getAccessoryType() {
@@ -94,7 +94,7 @@ public class Accessory extends Product implements IDiscountable {
 
     public void setAccessoryType(String accessoryType) {
         if (accessoryType == null || !accessoryType.trim().toUpperCase().matches("^(SAC|TAI_NGHE|OP_LUNG|CUONG_LUC)$")) {
-            throw new ValidationException("[LOI]: Loai phu kien phai la SAC, TAI_NGHE, OP_LUNG hoac CUONG_LUC!");
+            throw new ValidationException("[LỖI]: Loại phụ kiện phải là SAC, TAI_NGHE, OP_LUNG hoặc CUONG_LUC!");
         }
         this.accessoryType = accessoryType.trim().toUpperCase();
     }

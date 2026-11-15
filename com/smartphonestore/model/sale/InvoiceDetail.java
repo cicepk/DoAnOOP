@@ -12,10 +12,10 @@ public class InvoiceDetail {
     public InvoiceDetail(String invoiceId, String productId, String productName,
                          String serialNumber, double unitPrice) {
         if (blank(invoiceId) || blank(productId) || blank(productName))
-            throw new IllegalArgumentException("Ma hoa don, ma san pham va ten san pham khong duoc trong.");
+            throw new IllegalArgumentException("Mã hóa đơn, mã sản phẩm và tên sản phẩm không được trống.");
         if (blank(serialNumber) || serialNumber.contains("|"))
-            throw new IllegalArgumentException("Serial/IMEI khong hop le.");
-        if (unitPrice < 0) throw new IllegalArgumentException("Don gia khong duoc am.");
+            throw new IllegalArgumentException("Serial/IMEI không hợp lệ.");
+        if (unitPrice < 0) throw new IllegalArgumentException("Đơn giá không được âm.");
         this.invoiceId = invoiceId.trim();
         this.productId = productId.trim().toUpperCase();
         this.productName = productName.trim().replace('|', '/');
@@ -35,7 +35,7 @@ public class InvoiceDetail {
     public static InvoiceDetail fromFileString(String line) {
         String[] p = line.split("\\|", -1);
         if (p.length != 6 || !"1".equals(p[5].trim()))
-            throw new IllegalArgumentException("Chi tiet hoa don phai co 6 cot va quantity = 1.");
+            throw new IllegalArgumentException("Chi tiết hóa đơn phải có 6 cột và quantity = 1.");
         return new InvoiceDetail(p[0], p[1], p[2], p[3], Double.parseDouble(p[4]));
     }
 
