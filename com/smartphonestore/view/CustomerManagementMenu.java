@@ -6,12 +6,15 @@ import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.manager.ProductManager;
 import com.smartphonestore.model.product.ProductDetail;
+import com.smartphonestore.model.sale.Invoice;
+import com.smartphonestore.model.sale.InvoiceDetail;
 import com.smartphonestore.model.product.Product;
 import com.smartphonestore.model.customer.*;
 import com.smartphonestore.model.enums.Role;
 import com.smartphonestore.util.DateUtil;
 import com.smartphonestore.util.InputHelper;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -221,10 +224,59 @@ public class CustomerManagementMenu {
         for (CustomerReview r : list) r.display();
     }
 
+    /** Hỏi số seri: nhập trực tiếp, hoặc tra theo khách nếu khách quên seri. */
+    private String askSerial() {
+        System.out.println("[1] Nhập số seri   [2] Khách quên seri (tra theo khách)");
+        if (InputHelper.readInt("Chọn: ", 1, 2) == 1) {
+            return InputHelper.readString("Số seri máy: ").trim().toUpperCase();
+        }
+        return pickSerialOfCustomer();
+    }
+
+    /** Liệt kê máy khách đã mua và thanh toán, nhân viên chọn một máy. Trả null nếu hủy. */
+    private String pickSerialOfCustomer() {
+        String key = InputHelper.readString("Mã khách hoặc SĐT: ");
+        Customer c = manager.findById(key);
+        if (c == null) {
+            Customer[] found = manager.search(key);
+            if (found.length == 0) throw new IllegalArgumentException("Không tìm thấy khách " + key);
+            if (found.length > 1) {
+                throw new IllegalArgumentException("Có " + found.length
+                        + " khách khớp, hãy nhập mã khách (dùng mục [5] để tìm)");
+            }
+            c = found[0];
+        }
+
+        List<String> serials = new ArrayList<>();
+        System.out.println("--- Máy khách " + c.getFullName() + " (" + c.getId() + ") đã mua ---");
+        for (Invoice inv : salesManager.getAllInvoices()) {
+            if (!"PAID".equals(inv.getStatus()) || !c.getId().equalsIgnoreCase(inv.getCustomerId())) continue;
+            LocalDate saleDate = DateUtil.parse(inv.getCreationDate());
+            for (InvoiceDetail d : salesManager.getDetailsByInvoice(inv.getId())) {
+                ProductDetail pd = productManager.findDetailBySerial(d.getSerialNumber());
+                if (pd == null) continue;
+                Product p = productManager.findByID(pd.getProductId());
+                if (p == null) continue;
+                LocalDate expiry = saleDate.plusMonths(p.getWarrantyMonths());
+                String state = LocalDate.now().isAfter(expiry) ? "đã hết hạn " : "còn đến ";
+                serials.add(pd.getSerialNumber());
+                System.out.printf("[%d] %s | %s | mua %s | %s | BH %s%s%n", serials.size(),
+                        pd.getSerialNumber(), p.getName(), DateUtil.format(saleDate),
+                        pd.getStatus(), state, DateUtil.format(expiry));
+            }
+        }
+        if (serials.isEmpty()) {
+            throw new IllegalArgumentException("Khách này chưa có máy nào đã mua và thanh toán");
+        }
+        int pick = InputHelper.readInt("Chọn máy (0 = hủy): ", 0, serials.size());
+        return pick == 0 ? null : serials.get(pick - 1);
+    }
+    
     // ---------- Bảo hành ----------
     /** Nhân viên chỉ nhập số seri: hệ thống tự tìm người mua, ngày bán và thời hạn bảo hành. */
     private void receiveClaim() {
-        String serial = InputHelper.readString("Số seri máy: ").trim().toUpperCase();
+       String serial = askSerial();
+        if (serial == null) return;        // nhân viên chọn hủy
         String buyerId = salesManager.getBuyerIdBySerial(serial);              // TV3
         if (buyerId == null) {
             throw new ValidationException("Seri này chưa bán, chưa thanh toán, đã hủy hoặc hóa đơn không có mã khách");
@@ -276,7 +328,8 @@ public class CustomerManagementMenu {
         System.out.println("[2] Tra phiếu theo mã phiếu hoặc số seri");
         System.out.println("[3] Cập nhật trạng thái phiếu");
         System.out.println("[4] Xóa phiếu đã đóng (chỉ Admin)");
-        int sub = InputHelper.readInt("Chọn: ", 1, 4);
+        System.out.println("[0] Quay lại Menu trước");
+        int sub = InputHelper.readInt("Chọn: ", 1, 5);
         switch (sub) {
             case 1:
                 printClaims(manager.getClaimsByCustomer(askCustomer().getId()));
@@ -287,8 +340,10 @@ public class CustomerManagementMenu {
             case 3:
                 updateClaimStatus();
                 break;
-            default:
+            case 4:
                 deleteClaim();
+                break;
+            default:
                 break;
         }
     }
