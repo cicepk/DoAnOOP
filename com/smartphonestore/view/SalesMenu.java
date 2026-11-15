@@ -170,7 +170,7 @@ public class SalesMenu {
 
     private void payElectronic() {
         Invoice invoice = findUnpaidInvoice(); if (invoice == null) return;
-        String bank = InputHelper.readString("Ngân hàng/ví điện tử: ");
+        String bank = InputHelper.readText("Ngân hàng/ví điện tử: ");
         ElectronicPayment payment = new ElectronicPayment(salesManager.nextPaymentId(), invoice.getId(),
                 invoice.calculateFinalTotal(), "QR-" + System.currentTimeMillis(), bank);
         System.out.println("Chuỗi QR tham chiếu (demo): " + payment.generatePaymentQRCode());
@@ -182,8 +182,14 @@ public class SalesMenu {
     private boolean completePayment(Invoice invoice, com.smartphonestore.model.sale.Payment payment) {
         if (!salesManager.addPayment(payment)) { System.out.println("Ghi nhận thanh toán thất bại."); return false; }
         double paidTotal = payment.getAmount();
-        if (!invoice.getCustomerId().isEmpty() && customerManager != null)
-            customerManager.recordPurchase(invoice.getCustomerId(), paidTotal);
+        // Hóa đơn đã PAID ở bước trên, nên lỗi cộng chi tiêu khách chỉ báo lại, không được dừng giữa chừng
+        if (!invoice.getCustomerId().isEmpty() && customerManager != null) {
+            try {
+                customerManager.recordPurchase(invoice.getCustomerId(), paidTotal);
+            } catch (IllegalArgumentException e) {
+                System.out.println("(!) Không cộng được chi tiêu cho khách: " + e.getMessage());
+            }
+        }
         if (employeeManager != null) {
             Employee employee = employeeManager.findById(staffId);
             if (employee instanceof SalesStaff) {

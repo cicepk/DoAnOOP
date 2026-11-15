@@ -6,6 +6,8 @@ public class ElectronicPayment extends Payment {
         super(paymentId, invoiceId, amount, transactionCode);
         if (bankOrWalletName == null || bankOrWalletName.trim().isEmpty())
             throw new IllegalArgumentException("Tên ngân hàng/ví điện tử không được trống.");
+        if (bankOrWalletName.contains("|"))
+            throw new IllegalArgumentException("Tên ngân hàng/ví điện tử không được chứa ký tự '|'.");
         this.bankOrWalletName = bankOrWalletName.trim();
     }
     // Chuoi tham chieu demo, khong phai QR ngan hang that.

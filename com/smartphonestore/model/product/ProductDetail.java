@@ -81,7 +81,7 @@ public class ProductDetail {
         if (productName == null || productName.trim().isEmpty()) {
             this.productName = "Sản phẩm " + (productId != null ? productId : "");
         } else {
-            this.productName = productName.trim();
+            this.productName = productName.trim().replace("|", " "); // '|' là ký tự ngăn cột trong file
         }
     }
 
@@ -125,6 +125,9 @@ public class ProductDetail {
     public void setSupplier(String supplier) {
         if (supplier == null || supplier.trim().isEmpty()) {
             throw new ValidationException("[LỖI]: Tên nhà cung cấp không được để trống!");
+        }
+        if (supplier.contains("|")) {
+            throw new ValidationException("[LỖI]: Tên nhà cung cấp không được chứa ký tự '|'!");
         }
         this.supplier = supplier.trim();
     }

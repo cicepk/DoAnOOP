@@ -197,6 +197,22 @@ public class SalesManager {
         Invoice invoice = findPaidInvoiceBySerial(serial);
         return invoice == null || invoice.getCustomerId().isEmpty() ? null : invoice.getCustomerId();
     }
+    /** Khách còn hóa đơn nào không (kể cả UNPAID / CANCELLED). Dùng để chặn xóa khách. */
+    public boolean hasInvoicesOfCustomer(String customerId) {
+        if (customerId == null || customerId.trim().isEmpty()) return false;
+        for (Invoice invoice : invoices) {
+            if (invoice.getCustomerId().equalsIgnoreCase(customerId.trim())) return true;
+        }
+        return false;
+    }
+
+    /** Các mã nhân viên đã từng lập hóa đơn. Dùng để không cấp lại mã nhân viên cũ. */
+    public List<String> getAllStaffIds() {
+        List<String> result = new ArrayList<>();
+        for (Invoice invoice : invoices) result.add(invoice.getSalesStaffId());
+        return result;
+    }
+
     public String getSaleDateBySerial(String serial) {
         Invoice invoice = findPaidInvoiceBySerial(serial);
         return invoice == null ? null : invoice.getCreationDate();

@@ -144,6 +144,12 @@ public class CustomerManagementMenu {
             return;
         }
         Customer c = askCustomer();
+        // Khách mới (chưa thanh toán lần nào) có totalSpent = 0 nhưng vẫn có thể đang có hóa đơn UNPAID,
+        // xóa đi thì lúc thanh toán sẽ không còn hồ sơ để cộng chi tiêu
+        if (salesManager.hasInvoicesOfCustomer(c.getId())) {
+            System.out.println("(!) Khách đã có hóa đơn (kể cả chưa thanh toán hoặc đã hủy), không thể xóa.");
+            return;
+        }
         System.out.println("Sắp xóa: " + c.getId() + " - " + c.getFullName());
         if (!confirm("Xác nhận xóa?")) {
             System.out.println("Đã hủy.");

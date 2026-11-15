@@ -115,14 +115,19 @@ public class EmployeeManager {
     // ===================== THÊM / SỬA / XÓA =====================
     // Lấy số lớn nhất rồi + 1
     public String generateNextId() {
+        return generateNextId(new ArrayList<>());
+    }
+
+    // usedIds: các mã EMPxx còn xuất hiện ở nơi khác (tài khoản, hóa đơn) dù nhân viên đã bị xóa.
+    // Bỏ qua các mã này để nhân viên mới không "nhận" tài khoản / hóa đơn của người cũ.
+    public String generateNextId(List<String> usedIds) {
         int max = 0;
-        for (Employee e : employees) {
-            try {
-                int num = Integer.parseInt(e.getId().substring(3)); // cắt 3 ký tự đầu EMP
-                if (num > max) max = num;
-            } catch (NumberFormatException | StringIndexOutOfBoundsException ignored) {
-                // Mã không đúng dạng EMPxx thì bỏ qua
-            }
+        List<String> allIds = new ArrayList<>(usedIds);
+        for (Employee e : employees) allIds.add(e.getId());
+        for (String id : allIds) {
+            if (id == null || !id.trim().toUpperCase().matches("EMP\\d+")) continue; // Mã không đúng dạng EMPxx thì bỏ qua
+            int num = Integer.parseInt(id.trim().substring(3)); // cắt 3 ký tự đầu EMP
+            if (num > max) max = num;
         }
         return String.format("EMP%02d", max + 1);
     }

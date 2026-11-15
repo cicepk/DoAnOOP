@@ -12,6 +12,14 @@ public class InputHelper {
             System.out.println("(!) Dữ liệu không được để trống. Vui lòng nhập lại!");
         }
     }
+    // Chuỗi sẽ được ghi vào file: không cho chứa '|' vì '|' là ký tự ngăn cột trong file .txt
+    public static String readText(String text) {
+        while (true) {
+            String input = readString(text);
+            if (!input.contains("|")) return input;
+            System.out.println("(!) Không được chứa ký tự '|'. Vui lòng nhập lại!");
+        }
+    }
     public static int readInt(String text, int min, int max) {
         while(true) {
             System.out.print(text);
@@ -29,6 +37,11 @@ public class InputHelper {
             System.out.print(text);
             try {
                 double value = Double.parseDouble(scanner.nextLine().trim());
+                // parseDouble nhận cả chữ "Infinity" / "NaN", phải chặn riêng
+                if (Double.isNaN(value) || Double.isInfinite(value)) {
+                    System.out.println("(!) Lỗi: Phải nhập số thực hợp lệ!");
+                    continue;
+                }
                 if (value >= min) return value;
                 System.out.printf("(!) Giá trị phải >= %.0f.%n", min);
             } catch (NumberFormatException e) {

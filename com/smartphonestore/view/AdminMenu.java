@@ -13,6 +13,7 @@ import com.smartphonestore.model.auth.WarehouseStaff;
 import com.smartphonestore.model.enums.Role;
 import com.smartphonestore.util.InputHelper;
 import java.time.Year;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AdminMenu {
@@ -147,7 +148,7 @@ public class AdminMenu {
         Role role = chooseStaffRole("Chọn loại nhân viên");
         if (role == null) return;
 
-        String id = employeeManager.generateNextId();
+        String id = employeeManager.generateNextId(usedEmployeeIds());
         System.out.println("Mã nhân viên mới: " + id);
         String name = inputName();
         String phone = inputPhone();
@@ -165,6 +166,15 @@ public class AdminMenu {
             createAccountForEmployee(id, role);
         }
     }
+    // Mã EMPxx còn nằm trong tài khoản (đã khóa) hoặc hóa đơn của nhân viên đã xóa: không cấp lại
+    private List<String> usedEmployeeIds() {
+        List<String> ids = new ArrayList<>(salesManager.getAllStaffIds());
+        for (Account acc : accountManager.getAll()) {
+            if (acc.getRole().isStaff()) ids.add(acc.getLinkedId());
+        }
+        return ids;
+    }
+
     // Trả về null nếu chọn Hủy
     private Role chooseStaffRole(String title) {
         System.out.println(title + ": [1] Quản trị  [2] Thủ kho  [3] Bán hàng  [0] Hủy");

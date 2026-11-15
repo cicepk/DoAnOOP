@@ -70,6 +70,9 @@ public abstract class Product {
         if (name == null || name.trim().isEmpty()) {
             throw new ValidationException("[LỖI]: Tên sản phẩm không được để trống!");
         }
+        if (name.contains("|")) {
+            throw new ValidationException("[LỖI]: Tên sản phẩm không được chứa ký tự '|'!");
+        }
         this.name = name.trim();
     }
 
@@ -80,6 +83,9 @@ public abstract class Product {
     public void setBrand(String brand) {
         if (brand == null || brand.trim().isEmpty()) {
             throw new ValidationException("[LỖI]: Hãng sản xuất không được để trống!");
+        }
+        if (brand.contains("|")) {
+            throw new ValidationException("[LỖI]: Hãng sản xuất không được chứa ký tự '|'!");
         }
         this.brand = brand.trim();
     }

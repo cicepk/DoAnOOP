@@ -117,7 +117,7 @@ public class WarehouseMenu {
                     System.out.println("==============================================================");
                     String supplier = "FPT_Synnex";
                     if (!InputHelper.readYesNo("Sử dụng Nhà cung cấp mặc định 'FPT_Synnex'? (Y/N): ")) {
-                        supplier = InputHelper.readString("Nhập tên Nhà cung cấp: ");
+                        supplier = InputHelper.readText("Nhập tên Nhà cung cấp: ");
                     }
 
                     String now = DateUtil.nowText();
@@ -217,8 +217,8 @@ public class WarehouseMenu {
                             System.out.println(" [3] Accessory (Phụ kiện)");
                             int typeChoice = InputHelper.readInt("Chọn (1-3): ", 1, 3);
 
-                            String name = InputHelper.readString("Nhập tên sản phẩm: ");
-                            String brand = InputHelper.readString("Nhập hãng sản xuất (Apple, Samsung, Xiaomi...): ");
+                            String name = InputHelper.readText("Nhập tên sản phẩm: ");
+                            String brand = InputHelper.readText("Nhập hãng sản xuất (Apple, Samsung, Xiaomi...): ");
                             double sellPrice = InputHelper.readDouble("Nhập giá bán niêm yết cho khách (VND): ", 1);
                             int threshold = InputHelper.readInt("Nhập ngưỡng cảnh báo tồn kho tối thiểu: ", 0, 10000);
                             int qty = InputHelper.readInt("Nhập số lượng nhập lô đầu tiên: ", 1, 100000);
@@ -321,7 +321,7 @@ public class WarehouseMenu {
                         p.displayInfo();
                         String newName = p.getName();
                         if (InputHelper.readYesNo("Bạn có muốn đổi tên sản phẩm không? (Y/N): ")) {
-                            newName = InputHelper.readString("Nhập tên mới: ");
+                            newName = InputHelper.readText("Nhập tên mới: ");
                         }
 
                         double inputPrice = InputHelper.readDouble("Nhập giá mới (nhập 0 nếu giữ nguyên): ", 0);
