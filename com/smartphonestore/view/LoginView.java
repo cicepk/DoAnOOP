@@ -133,7 +133,7 @@ public class LoginView {
                 break;
             case SALES:
                 // TV3 - linkedId của tài khoản bán hàng là mã EMPxx, dùng làm mã nhân viên lập hóa đơn
-                new SalesMenu(salesManager, customerManager, employeeManager, acc.getLinkedId()).show();
+                new SalesMenu(salesManager, customerManager, employeeManager, acc.getLinkedId(),accountManager, productManager).show();
                 break;
             case CUSTOMER: {
                 // TV4 - linkedId là mã CUSxx, khách chỉ xem được dữ liệu của chính mình
