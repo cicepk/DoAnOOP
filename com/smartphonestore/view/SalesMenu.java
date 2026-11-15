@@ -10,6 +10,9 @@ import com.smartphonestore.model.sale.ElectronicPayment;
 import com.smartphonestore.model.sale.Invoice;
 import com.smartphonestore.model.sale.InvoiceDetail;
 import com.smartphonestore.util.InputHelper;
+import com.smartphonestore.model.enums.Role;
+import com.smartphonestore.manager.AccountManager;
+import com.smartphonestore.manager.ProductManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,33 +22,38 @@ public class SalesMenu {
     private final SalesManager salesManager;
     private final CustomerManager customerManager;
     private final EmployeeManager employeeManager;
+    private final AccountManager accountManager;
+    private final ProductManager productManager;
     private final String staffId;
 
     public SalesMenu(SalesManager salesManager, CustomerManager customerManager,
-                     EmployeeManager employeeManager, String staffId) {
+                     EmployeeManager employeeManager, String staffId,AccountManager accountManager, ProductManager productManager) {
         if (salesManager == null) throw new IllegalArgumentException("SalesManager khong duoc null.");
         this.salesManager = salesManager;
         this.customerManager = customerManager;
         this.employeeManager = employeeManager;
         this.staffId = staffId == null ? "" : staffId.trim();
+        this.accountManager = accountManager;
+        this.productManager = productManager;
     }
 
     public void show() {
         boolean running = true;
         while (running) {
-            System.out.println("\n========== MENU NHAN VIEN BAN HANG ==========");
-            System.out.println("[1] Xem danh sach hoa don");
-            System.out.println("[2] Lap hoa don ban le moi");
-            System.out.println("[3] Xem chi tiet hoa don");
-            System.out.println("[4] In hoa don VAT");
-            System.out.println("[5] Thanh toan tien mat");
-            System.out.println("[6] Thanh toan chuyen khoan / QR");
-            System.out.println("[7] Tim hoa don theo ma");
-            System.out.println("[8] Huy hoa don chua thanh toan");
-            System.out.println("[9] Thong ke doanh thu hom nay");
-            System.out.println("[10] Dang xuat");
-            System.out.println("[0] Thoat chuong trinh");
-            int choice = InputHelper.readInt("Chon: ", 0, 10);
+            System.out.println("\n========== MENU NHÂN VIÊN BÁN HÀNG ==========");
+            System.out.println("[1] Xem danh sách hóa đơn");
+            System.out.println("[2] Lập hóa đơn bán lẻ mới");
+            System.out.println("[3] Xem chi tiết hóa đơn");
+            System.out.println("[4] In hóa đơn VAT");
+            System.out.println("[5] Thanh toán tiền mặt");
+            System.out.println("[6] Thanh toán chuyển khoản / QR");
+            System.out.println("[7] Tìm hóa đơn theo ma");
+            System.out.println("[8] Hủy hóa đơn chưa thanh toán");
+            System.out.println("[9] Thống kê doanh thu hôm nay");
+            System.out.println("[10] Quản lý khách hàng ");
+            System.out.println("[11] Đăng xuất ");
+            System.out.println("[0] Thoát chương trình");
+            int choice = InputHelper.readInt("Chọn: ", 0, 11);
             try {
                 switch (choice) {
                     case 1: showAllInvoices(); break;
@@ -57,7 +65,9 @@ public class SalesMenu {
                     case 7: searchInvoice(); break;
                     case 8: cancelInvoice(); break;
                     case 9: System.out.printf("Doanh thu da thanh toan hom nay: %,.0f VND%n", salesManager.revenueToday()); break;
-                    case 10: running = false; break;
+                    case 10: openCustomerMenu(); break;
+                    case 11: System.out.println("Da dang xuat."); running = false; break;
+
                     case 0: System.out.println("Ket thuc chuong trinh."); System.exit(0); break;
                     default: break;
                 }
@@ -106,9 +116,21 @@ public class SalesMenu {
             }
         }
         if (lines.isEmpty()) { System.out.println("Khong tao hoa don rong."); return; }
+
+        // [TC07] Tính ưu đãi VIP: trước đây không gọi getVipDiscount nên khách VIP trả đủ giá.
+        // getVipDiscount (TV4) trả về 0 cho khách thường; khách lẻ (mã rỗng) thì bỏ qua.
+        double subtotal = 0;
+        for (InvoiceDetail detail : lines) subtotal += detail.calculateLineTotal();
+        double discount = 0;
+        if (!customerId.isEmpty() && customerManager != null) {
+            discount = customerManager.getVipDiscount(customerId, subtotal);
+            if (discount > 0) System.out.printf("Khach VIP: giam %,.0f VND tren tien hang.%n", discount);
+        }
+
         double vatPercent = InputHelper.readDouble("VAT (%), nhap 8 neu VAT 8%: ", 0);
         if (vatPercent > 100) throw new IllegalArgumentException("VAT khong duoc vuot qua 100%.");
-        salesManager.createInvoice(invoiceId, customerId, staffId, vatPercent / 100.0, lines);
+        // [TC07] Gọi hàm createInvoice mới có tham số giảm giá
+        salesManager.createInvoice(invoiceId, customerId, staffId, vatPercent / 100.0, discount, lines);
         System.out.println("Da tao hoa don " + invoiceId + " (UNPAID).");
     }
 
@@ -182,5 +204,13 @@ public class SalesMenu {
     private void cancelInvoice() {
         String id = InputHelper.readString("Ma hoa don can huy: ");
         System.out.println(salesManager.cancelInvoice(id) ? "Da huy hoa don va tra serial ve kho." : "Khong huy duoc hoa don.");
+    }
+    // ===================== [10] KHÁCH HÀNG (TV4) =====================
+
+    // Mở menu Quản lý khách hàng của TV4 với quyền ADMIN (được xóa phiếu bảo hành).
+    // Chọn [0] trong menu đó sẽ quay lại Menu Admin.
+    private void openCustomerMenu() {
+        new CustomerManagementMenu(customerManager, accountManager, salesManager,
+                                   productManager, Role.SALES).show();
     }
 }
