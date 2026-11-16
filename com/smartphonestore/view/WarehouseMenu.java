@@ -15,6 +15,12 @@ public class WarehouseMenu {
         this.prd = prd;
     }
 
+    // Hàm main để chạy test độc lập riêng Module Kho (TV2)
+    public static void main(String[] args) {
+        ProductManager manager = new ProductManager();
+        new WarehouseMenu(manager).displayMenu();
+    }
+
     public void displayMenu() {
         boolean running = true;
         while (running) {
@@ -22,7 +28,7 @@ public class WarehouseMenu {
             System.out.println("             MENU NHÂN VIÊN KHO (THÀNH VIÊN 2)                ");
             System.out.println("==============================================================");
             System.out.println(" [1] Xem danh mục toàn bộ sản phẩm & Tồn kho");
-            System.out.println(" [2] Xem bảng chi tiết từng máy (Serial/IMEI & Ngày nhập)");
+            System.out.println(" [2] Xem bảng chi tiết từng con máy (Serial/IMEI & Ngày nhập)");
             System.out.println(" [3] Lập phiếu nhập hàng vào kho (Nhập lô / Nhập mới)");
             System.out.println(" [4] Cập nhật thông tin / Giá bán sản phẩm theo Mã ID");
             System.out.println(" [5] Xóa sản phẩm khỏi danh mục kho theo Mã ID");
@@ -54,8 +60,8 @@ public class WarehouseMenu {
                 // CHỨC NĂNG 2: XEM BẢNG CHI TIẾT SẢN PHẨM (THEO HÃNG / MÃ SP)
                 // ==============================================================
                 case 2: {
-                    System.out.println("\n--- XEM BẢNG CHI TIẾT TỪNG MÁY TRONG KHO ---");
-                    System.out.println(" [1] Xem tất cả chi tiết máy trong kho");
+                    System.out.println("\n--- XEM BẢNG CHI TIẾT TỪNG CON MÁY TRONG KHO ---");
+                    System.out.println(" [1] Xem tất cả chi tiết con máy trong kho");
                     System.out.println(" [2] Xem chi tiết lọc theo Hãng (Apple, Samsung, Xiaomi...)");
                     System.out.println(" [3] Xem chi tiết theo Mã sản phẩm cụ thể (ví dụ PRD01)");
                     System.out.println(" [0] Quay lại Menu chính");
@@ -66,7 +72,7 @@ public class WarehouseMenu {
 
                     if (subChoice == 1) {
                         detailsToShow = prd.getAllProductDetails();
-                        title = "TẤT CẢ MÁY TRONG KHO";
+                        title = "TẤT CẢ CON MÁY TRONG KHO";
                     } else if (subChoice == 2) {
                         String brand = InputHelper.readString("Nhập tên hãng muốn xem (ví dụ Apple, Samsung, Xiaomi, Nokia): ");
                         detailsToShow = prd.getDetailsByBrand(brand);
@@ -82,14 +88,14 @@ public class WarehouseMenu {
                     }
 
                     System.out.println("\n===============================================================================================================================");
-                    System.out.println("                                       BẢNG CHI TIẾT TỪNG MÁY - " + title);
+                    System.out.println("                                       BẢNG CHI TIẾT CON MÁY - " + title);
                     System.out.println("===============================================================================================================================");
                     System.out.printf(" %-7s │ %-24s │ %-8s │ %-18s │ %-19s │ %-14s │ %-12s │ %-9s%n",
                             "MÃ SP", "TÊN SẢN PHẨM", "HÃNG", "SỐ SERI / IMEI", "NGÀY GIỜ NHẬP", "GIÁ NHẬP", "NHÀ CUNG CẤP", "TRẠNG THÁI");
                     System.out.println("────────┼──────────────────────────┼──────────┼────────────────────┼─────────────────────┼────────────────┼──────────────┼──────────");
 
                     if (detailsToShow.isEmpty()) {
-                        System.out.println("  [!] Không tìm thấy máy nào phù hợp trong dữ liệu chi tiết.");
+                        System.out.println("  [!] Không tìm thấy con máy nào phù hợp trong dữ liệu chi tiết.");
                     } else {
                         int inStockCount = 0;
                         int soldCount = 0;
@@ -102,7 +108,7 @@ public class WarehouseMenu {
                             else soldCount++;
                         }
                         System.out.println("===============================================================================================================================");
-                        System.out.printf("Tổng cộng: %d máy (Trong kho: %d | Đã xuất bán: %d)%n",
+                        System.out.printf("Tổng cộng: %d con máy (Trong kho: %d | Đã xuất bán: %d)%n",
                                 detailsToShow.size(), inStockCount, soldCount);
                     }
                     break;
@@ -284,7 +290,7 @@ public class WarehouseMenu {
                                 sessionItemCount++;
                                 sessionTotalQty += qty;
                                 sessionTotalCost += (qty * importPrice);
-                                System.out.printf("[OK] Đã tạo thành công sản phẩm mới '%s' (Mã: %s) và lưu %d máy vào kho!%n", name, id, qty);
+                                System.out.printf("[OK] Đã tạo thành công sản phẩm mới '%s' (Mã: %s) và lưu %d con máy vào kho!%n", name, id, qty);
                             } else {
                                 System.out.println("[X] Lỗi khi lưu sản phẩm mới!");
                             }
@@ -296,11 +302,11 @@ public class WarehouseMenu {
                         System.out.println("\n==============================================================");
                         System.out.println("       BIÊN BẢN TỔNG KẾT PHIẾU NHẬP HÀNG (GOODS RECEIPT)      ");
                         System.out.println("==============================================================");
-                        System.out.println(" Nhà cung cấp  : " + supplier);
-                        System.out.println(" Ngày nhập     : " + importDate);
+                        System.out.println(" Nhà cung cấp    : " + supplier);
+                        System.out.println(" Ngày nhập       : " + importDate);
                         System.out.println(" Số dòng mặt hàng: " + sessionItemCount + " dòng");
                         System.out.println(" Tổng số máy nhập: " + sessionTotalQty + " chiếc");
-                        System.out.printf(" Tổng tiền nhập: %,.0f VND%n", sessionTotalCost);
+                        System.out.printf(" Tổng tiền nhập  : %,.0f VND%n", sessionTotalCost);
                         System.out.println("==============================================================");
                         System.out.println("[OK] Dữ liệu đã được đồng bộ vào 'products.txt' và 'product_details.txt'!");
                     } else {

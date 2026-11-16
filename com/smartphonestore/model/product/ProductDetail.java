@@ -113,7 +113,7 @@ public class ProductDetail {
 
     public void setImportPrice(double importPrice) {
         if (importPrice <= 0) {
-            throw new ValidationException("[LỖI]: Giá nhập sản phẩm phải lớn hơn 0 VND!");
+            throw new ValidationException("[LỖI]: Giá nhập sản phẩm phải lớn hơn 0 VNĐ!");
         }
         this.importPrice = importPrice;
     }

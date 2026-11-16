@@ -96,7 +96,7 @@ public abstract class Product {
 
     public void setPrice(double price) {
         if (price <= 0) {
-            throw new ValidationException("[LỖI]: Giá bán sản phẩm phải lớn hơn 0 VND!");
+            throw new ValidationException("[LỖI]: Giá bán sản phẩm phải lớn hơn 0 VNĐ!");
         }
         this.price = price;
     }

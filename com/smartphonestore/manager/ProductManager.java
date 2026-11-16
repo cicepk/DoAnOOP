@@ -131,7 +131,7 @@ public class ProductManager {
         for (ProductDetail d : productDetails) {
             if (d.getProductId().equalsIgnoreCase(pid)) {
                 if (SOLD.equalsIgnoreCase(d.getStatus()) || WARRANTY.equalsIgnoreCase(d.getStatus())) {
-                    System.out.printf("[!] KHÔNG THỂ XÓA: Sản phẩm %s đang có máy ở trạng thái '%s'!%n",
+                    System.out.printf("[!] KHÔNG THỂ XÓA: Sản phẩm %s đang có con máy ở trạng thái '%s'!%n",
                             pid, d.getStatus());
                     System.out.println("    (Xóa sẽ làm mất dữ liệu lịch sử bên Hóa đơn bán hàng hoặc Phiếu bảo hành).");
                     return false;
