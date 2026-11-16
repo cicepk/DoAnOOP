@@ -3,7 +3,7 @@ package com.smartphonestore.model.customer;
 import com.smartphonestore.exception.ValidationException;
 
 public class StandardCustomer extends Customer  {
-    public static final double VIP_THRESHOLD = 15_000_000;   // ngưỡng để lên VIP
+    public static final double VIP_THRESHOLD = 50_000_000;   // ngưỡng để lên VIP
     private int visitCount;                                  // số lần khách đã mua hàng
 
     public StandardCustomer(String id, String fullName, String phoneNumber, String email, double totalSpent, int visitCount) {
