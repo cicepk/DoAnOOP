@@ -1,9 +1,0 @@
-# Format: reviewId|customerId|productId|ratingStars|comment|reviewDate
-REV01|CUS03|PRD01|5|Máy dùng rất mượt, pin trâu, nhân viên tư vấn nhiệt tình!|12/11/2026 10:00:00
-REV02|CUS01|PRD03|4|Giá cả hợp lý trong tầm tiền, đóng gói cẩn thận.|12/11/2026 10:30:00
-REV03|CUS04|PRD02|5|Galaxy S24 Ultra màn hình phẳng chụp ảnh zoom 100x cực đỉnh, bút S-Pen tiện lợi!|12/11/2026 12:00:00
-REV04|CUS04|PRD41|5|Củ sạc Ugreen 65W nhỏ gọn, sạc nhanh cho cả điện thoại và laptop không nóng.|12/11/2026 12:15:00
-REV05|CUS02|PRD04|5|iPhone 16 Pro màu Titan sa mạc rất đẹp, nút Camera Control chụp nhanh tiện lợi.|12/11/2026 16:30:00
-REV06|CUS01|PRD05|4|iPhone 13 nhỏ gọn vừa tay, cấu hình đủ dùng tốt trong 2-3 năm tới.|12/11/2026 18:00:00
-REV07|CUS03|PRD45|5|Tai nghe Marshall Major IV chất âm rock bass ấm, pin nghe cả tuần chưa hết.|13/11/2026 09:30:00
-REV08|CUS01|PRD39|4|Củ sạc Anker nhỏ nhẹ hoàn thiện chắc chắn, sạc nhanh ổn định.|13/11/2026 10:15:00
