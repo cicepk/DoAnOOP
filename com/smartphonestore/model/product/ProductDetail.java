@@ -13,9 +13,10 @@ public class ProductDetail {
     private String importDate;    // Ngày giờ nhập kho (dd/MM/yyyy HH:mm:ss)
     private double importPrice;   // Giá nhập hàng từ nhà cung cấp (VND)
     private String supplier;      // Tên nhà cung cấp (FPT, Viettel, Digiworld...)
-    private String status;        // Trạng thái: IN_STOCK (Trong kho), SOLD (Đã bán), WARRANTY (Bảo hành)
+    private String status;        // Trạng thái: IN_STOCK (Trong kho), SOLD (Đã bán), WARRANTY (Bảo hành), TRADE_IN (Thu cũ)
+    private String receiptId = "PN00"; // Mã phiếu nhập (PN01, PN02...)
 
-    public ProductDetail(String productId, String productName, String serialNumber, String importDate, double importPrice, String supplier, String status) {
+    public ProductDetail(String productId, String productName, String serialNumber, String importDate, double importPrice, String supplier, String status, String receiptId) {
         setProductId(productId);
         setProductName(productName);
         setSerialNumber(serialNumber);
@@ -23,16 +24,25 @@ public class ProductDetail {
         setImportPrice(importPrice);
         setSupplier(supplier);
         setStatus(status);
+        setReceiptId(receiptId);
+    }
+
+    public ProductDetail(String productId, String productName, String serialNumber, String importDate, double importPrice, String supplier, String status) {
+        this(productId, productName, serialNumber, importDate, importPrice, supplier, status, "PN00");
     }
 
     // Constructor tiện lợi khi mới nhập kho (mặc định trạng thái IN_STOCK)
     public ProductDetail(String productId, String productName, String serialNumber, String importDate, double importPrice, String supplier) {
-        this(productId, productName, serialNumber, importDate, importPrice, supplier, "IN_STOCK");
+        this(productId, productName, serialNumber, importDate, importPrice, supplier, "IN_STOCK", "PN00");
     }
 
     // Chuyển đối tượng thành chuỗi lưu file theo định dạng:
-    // productId|productName|serialNumber|importDate|importPrice|supplier|status
+    // productId|productName|serialNumber|importDate|importPrice|supplier|status|receiptId
     public String toFileString() {
+        if (receiptId != null && !receiptId.isEmpty() && !"PN00".equalsIgnoreCase(receiptId)) {
+            return String.format("%s|%s|%s|%s|%.0f|%s|%s|%s",
+                    productId, productName, serialNumber, importDate, importPrice, supplier, status, receiptId);
+        }
         return String.format("%s|%s|%s|%s|%.0f|%s|%s",
                 productId, productName, serialNumber, importDate, importPrice, supplier, status);
     }
@@ -138,11 +148,23 @@ public class ProductDetail {
             this.status = "IN_STOCK";
         } else {
             String s = status.trim().toUpperCase();
-            if (!s.matches("^(IN_STOCK|SOLD|WARRANTY)$")) {
+            if (!s.matches("^(IN_STOCK|SOLD|WARRANTY|TRADE_IN)$")) {
                 this.status = "IN_STOCK";
             } else {
                 this.status = s;
             }
+        }
+    }
+
+    public String getReceiptId() {
+        return receiptId;
+    }
+
+    public void setReceiptId(String receiptId) {
+        if (receiptId == null || receiptId.trim().isEmpty()) {
+            this.receiptId = "PN00";
+        } else {
+            this.receiptId = receiptId.trim().toUpperCase();
         }
     }
 }
