@@ -337,7 +337,7 @@ public class WarehouseMenu {
         System.out.println("--------------------------------------------------------------");
         String nextId = prd.generateNextID();
         System.out.println(" [Gợi ý] Mã sản phẩm tiếp theo trong hệ thống: " + nextId);
-        String rawId = InputHelper.readString("Nhập mã sản phẩm (nhấn Enter để lấy " + nextId + "): ");
+        String rawId = InputHelper.readOptionalString("Nhập mã sản phẩm (nhấn Enter để lấy " + nextId + "): ");
         String id = (rawId == null || rawId.trim().isEmpty()) ? nextId : ProductManager.normalizeId(rawId);
 
         if (prd.findByID(id) != null) {
