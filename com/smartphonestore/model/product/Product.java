@@ -10,6 +10,8 @@ public abstract class Product {
     private int stockQuantity;
     // thuộc tính riêng biệt, vd còn 3 cái thì cảnh báo
     private int minStockThreshold;
+    // Tỷ lệ chiết khấu giảm giá (0.0 đến 1.0; 0 là không giảm)
+    private double discountRate = 0.0;
 
     public Product(String id, String name, String brand, double price, int stockQuantity, int minStockThreshold) {
         setId(id);
@@ -121,5 +123,27 @@ public abstract class Product {
             throw new ValidationException("[LỖI]: Ngưỡng cảnh báo tồn kho tối thiểu không được âm!");
         }
         this.minStockThreshold = minStockThreshold;
+    }
+
+    public double getDiscountRate() {
+        return discountRate;
+    }
+
+    public void setDiscountRate(double discountRate) {
+        if (discountRate < 0.0) {
+            this.discountRate = 0.0;
+        } else if (discountRate > 1.0) {
+            this.discountRate = 1.0;
+        } else {
+            this.discountRate = discountRate;
+        }
+    }
+
+    // Giá bán thực tế cho khách hàng (sau khi trừ chiết khấu nếu có)
+    public double getSalePrice() {
+        if (discountRate > 0) {
+            return price * (1.0 - discountRate);
+        }
+        return price;
     }
 }

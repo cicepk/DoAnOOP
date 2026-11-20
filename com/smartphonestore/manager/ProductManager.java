@@ -1,6 +1,7 @@
 package com.smartphonestore.manager;
 
 import com.smartphonestore.model.product.*;
+import com.smartphonestore.util.DateUtil;
 import com.smartphonestore.util.FileIO;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -22,11 +23,18 @@ public class ProductManager {
     public static final String IN_STOCK = "IN_STOCK";
     public static final String SOLD = "SOLD";
     public static final String WARRANTY = "WARRANTY";
+    public static final String TRADE_IN = "TRADE_IN";
 
-    // Hàm khởi tạo: nạp dữ liệu từ cả 2 file và tự động đồng bộ tồn kho
+    // Danh sách phiếu nhập kho hàng hóa (Goods Receipt Notes)
+    private final List<ImportReceipt> receipts = new ArrayList<>();
+    // Đường dẫn tới file import_receipts.txt
+    private final String receiptsFilePath = "data/import_receipts.txt";
+
+    // Hàm khởi tạo: nạp dữ liệu từ cả 3 file và tự động đồng bộ tồn kho
     public ProductManager() {
         loadFromFile();
         loadDetailsFromFile();
+        loadReceiptsFromFile();
         syncStockFromDetails();
     }
 
@@ -224,16 +232,33 @@ public class ProductManager {
         return false;
     }
 
-    // Áp dụng giảm giá và cập nhật giá bán mới vào file products.txt (KHÔNG đụng importPrice)
+    // Áp dụng tỷ lệ chiết khấu giảm giá (Lưu tỷ lệ discountRate, KHÔNG ghi đè giá gốc)
     public double applyDiscount(String id, Double discountRate) {
         Product p = findByID(id);
-        if (!(p instanceof IDiscountable)) return -1;
-        double newPrice = ((IDiscountable) p).calculateDiscountedPrice(discountRate);
-        if (newPrice > 0 && newPrice != p.getPrice()) {
-            p.setPrice(newPrice);   // chỉ đổi giá bán
-            saveToFile();           // KHÔNG đụng importPrice trong product_details
+        if (p == null || !(p instanceof IDiscountable)) return -1;
+        p.setDiscountRate(discountRate != null ? discountRate : 0.0);
+        saveToFile();
+        return p.getSalePrice();
+    }
+
+    // Lấy danh sách sản phẩm đang có chương trình giảm giá
+    public List<Product> getDiscountedProducts() {
+        List<Product> list = new ArrayList<>();
+        for (Product p : products) {
+            if (p.getDiscountRate() > 0) {
+                list.add(p);
+            }
         }
-        return newPrice;
+        return list;
+    }
+
+    // TV3 gọi khi thực hiện Thu cũ đổi mới: Nhận con máy cũ của khách vào kho
+    public boolean addTradeInSerial(String productId, String productName, String serial, double tradeInPrice, String staffId) {
+        if (isSerialExists(serial)) return false;
+        String now = DateUtil.nowText();
+        ProductDetail detail = new ProductDetail(productId, productName, serial, now, tradeInPrice, "THU_CU_DOI_MOI", TRADE_IN, "PN00");
+        productDetails.add(detail);
+        return saveDetailsToFile();
     }
 
     // Tự động sinh mã sản phẩm tiếp theo (PRD10, PRD11...)
@@ -365,6 +390,13 @@ public class ProductManager {
                             break;
                         }
                     }
+
+                    if (!products.isEmpty() && parts.length >= 9) {
+                        try {
+                            double dr = Double.parseDouble(parts[8].trim());
+                            products.get(products.size() - 1).setDiscountRate(dr);
+                        } catch (NumberFormatException ignored) {}
+                    }
                 }
             } catch (Exception ex) {
                 System.err.println("Bỏ qua dòng lỗi trong products.txt: " + ex.getMessage());
@@ -390,7 +422,11 @@ public class ProductManager {
         List<String> lines = new ArrayList<>();
         // KHÔNG tự thêm dòng "# Format..." vì FileIO.writeLines tự động bảo lưu dòng chú thích # có sẵn
         for (Product p : products) {
-            lines.add(p.toFileString());
+            String line = p.toFileString();
+            if (p.getDiscountRate() > 0) {
+                line += String.format(Locale.US, "|%.2f", p.getDiscountRate());
+            }
+            lines.add(line);
         }
         return FileIO.writeLines(filePath, lines);
     }
@@ -401,9 +437,20 @@ public class ProductManager {
         List<String> lines = FileIO.readLines(detailsFilePath);
         for (String line : lines) {
             try {
-                // Format mới: productId|productName|serialNumber|importDate|importPrice|supplier|status (7 cột)
+                // Format: productId|productName|serialNumber|importDate|importPrice|supplier|status[|receiptId]
                 String[] parts = line.split("\\|", -1);
-                if (parts.length >= 7) {
+                if (parts.length >= 8) {
+                    String productId = parts[0].trim();
+                    String productName = parts[1].trim();
+                    String serialNumber = parts[2].trim();
+                    String importDate = parts[3].trim();
+                    double importPrice = Double.parseDouble(parts[4].trim());
+                    String supplier = parts[5].trim();
+                    String status = parts[6].trim();
+                    String receiptId = parts[7].trim();
+
+                    productDetails.add(new ProductDetail(productId, productName, serialNumber, importDate, importPrice, supplier, status, receiptId));
+                } else if (parts.length >= 7) {
                     String productId = parts[0].trim();
                     String productName = parts[1].trim();
                     String serialNumber = parts[2].trim();
@@ -412,7 +459,7 @@ public class ProductManager {
                     String supplier = parts[5].trim();
                     String status = parts[6].trim();
 
-                    productDetails.add(new ProductDetail(productId, productName, serialNumber, importDate, importPrice, supplier, status));
+                    productDetails.add(new ProductDetail(productId, productName, serialNumber, importDate, importPrice, supplier, status, "PN00"));
                 } else if (parts.length >= 6) {
                     // Tương thích ngược với format 6 cột cũ
                     String productId = parts[0].trim();
@@ -424,7 +471,7 @@ public class ProductManager {
                     Product p = findByID(productId);
                     String pName = p != null ? p.getName() : "Sản phẩm " + productId;
 
-                    productDetails.add(new ProductDetail(productId, pName, serialNumber, importDate, importPrice, supplier, status));
+                    productDetails.add(new ProductDetail(productId, pName, serialNumber, importDate, importPrice, supplier, status, "PN00"));
                 }
             } catch (Exception ex) {
                 System.err.println("Bỏ qua dòng lỗi trong product_details.txt: " + ex.getMessage());
@@ -457,5 +504,79 @@ public class ProductManager {
             lines.add(d.toFileString());
         }
         return FileIO.writeLines(detailsFilePath, lines);
+    }
+
+    // ==================== QUẢN LÝ BIÊN BẢN PHIẾU NHẬP KHO (INBOUND RECEIPTS) ====================
+
+    // Lấy toàn bộ danh sách biên bản phiếu nhập kho
+    public List<ImportReceipt> getAllReceipts() {
+        return new ArrayList<>(receipts);
+    }
+
+    // Tìm kiếm biên bản phiếu nhập theo Mã phiếu (PN01, PN02...)
+    public ImportReceipt findReceiptById(String id) {
+        if (id == null || id.trim().isEmpty()) return null;
+        String searchId = id.trim().toUpperCase();
+        for (ImportReceipt r : receipts) {
+            if (r.getReceiptId().equalsIgnoreCase(searchId)) {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    // Tự động sinh mã phiếu nhập tiếp theo (PN01, PN02...)
+    public String nextReceiptId() {
+        int maxIndex = 0;
+        for (ImportReceipt r : receipts) {
+            if (r.getReceiptId().startsWith("PN")) {
+                try {
+                    int num = Integer.parseInt(r.getReceiptId().substring(2));
+                    if (num > maxIndex) maxIndex = num;
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        return String.format("PN%02d", maxIndex + 1);
+    }
+
+    // Thêm biên bản phiếu nhập mới và tự động lưu file
+    public boolean addReceipt(ImportReceipt receipt) {
+        if (receipt == null || findReceiptById(receipt.getReceiptId()) != null) {
+            return false;
+        }
+        receipts.add(receipt);
+        return saveReceiptsToFile();
+    }
+
+    // Nạp dữ liệu biên bản phiếu nhập từ import_receipts.txt
+    public void loadReceiptsFromFile() {
+        receipts.clear();
+        List<String> lines = FileIO.readLines(receiptsFilePath);
+        for (String line : lines) {
+            try {
+                String[] parts = line.split("\\|", -1);
+                if (parts.length >= 6) {
+                    String rId = parts[0].trim();
+                    String staffId = parts[1].trim();
+                    String date = parts[2].trim();
+                    String supplier = parts[3].trim();
+                    int qty = Integer.parseInt(parts[4].trim());
+                    double cost = Double.parseDouble(parts[5].trim());
+                    receipts.add(new ImportReceipt(rId, staffId, date, supplier, qty, cost));
+                }
+            } catch (Exception ex) {
+                System.err.println("Bỏ qua dòng lỗi trong import_receipts.txt: " + ex.getMessage());
+            }
+        }
+    }
+
+    // Ghi toàn bộ danh sách phiếu nhập xuống import_receipts.txt
+    public boolean saveReceiptsToFile() {
+        receipts.sort((r1, r2) -> r1.getReceiptId().compareToIgnoreCase(r2.getReceiptId()));
+        List<String> lines = new ArrayList<>();
+        for (ImportReceipt r : receipts) {
+            lines.add(r.toFileString());
+        }
+        return FileIO.writeLines(receiptsFilePath, lines);
     }
 }
