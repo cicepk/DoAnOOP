@@ -1,6 +1,6 @@
 package com.smartphonestore.view;
 
-import com.smartphonestore.manager.AccountManager;
+import com.smartphonestore.model.auth.Account;
 import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.EmployeeManager;
 import com.smartphonestore.manager.ProductManager;
@@ -18,21 +18,21 @@ import java.util.List;
 
 /** Menu bán hàng; các manager được tạo một lần tại Main và truyền vào đây. */
 public class SalesMenu {
+    private final Account currentUser;
     private final SalesManager salesManager;
     private final CustomerManager customerManager;
     private final EmployeeManager employeeManager;
-    private final AccountManager accountManager;
     private final ProductManager productManager;
     private final String staffId;
 
     public SalesMenu(SalesManager salesManager, CustomerManager customerManager,
-                     EmployeeManager employeeManager, String staffId,AccountManager accountManager, ProductManager productManager) {
+                 EmployeeManager employeeManager, Account currentUser, ProductManager productManager) {
         if (salesManager == null) throw new IllegalArgumentException("SalesManager không được null.");
         this.salesManager = salesManager;
         this.customerManager = customerManager;
         this.employeeManager = employeeManager;
-        this.staffId = staffId == null ? "" : staffId.trim();
-        this.accountManager = accountManager;
+        this.currentUser = currentUser;
+        this.staffId = currentUser.getLinkedId() == null ? "" : currentUser.getLinkedId().trim();
         this.productManager = productManager;
     }
 
@@ -49,7 +49,7 @@ public class SalesMenu {
             System.out.println("[7] Tìm hóa đơn theo mã");
             System.out.println("[8] Hủy hóa đơn chưa thanh toán");
             System.out.println("[9] Thống kê doanh thu hôm nay");
-            System.out.println("[10] Quản lý khách hàng (TV4)");
+            System.out.println("[10] Chăm sóc khách hàng");
             System.out.println("[11] Đăng xuất");
             System.out.println("[0] Thoát chương trình");
             int choice = InputHelper.readInt("Chọn: ", 0, 11);
@@ -185,7 +185,8 @@ public class SalesMenu {
         // Hóa đơn đã PAID ở bước trên, nên lỗi cộng chi tiêu khách chỉ báo lại, không được dừng giữa chừng
         if (!invoice.getCustomerId().isEmpty() && customerManager != null) {
             try {
-                customerManager.recordPurchase(invoice.getCustomerId(), paidTotal);
+                if (customerManager.recordPurchase(invoice.getCustomerId(), paidTotal)) {
+                    System.out.println("[OK] Khách " + invoice.getCustomerId() + " đã đủ chi tiêu, được tự động nâng lên VIP!");}
             } catch (IllegalArgumentException e) {
                 System.out.println("(!) Không cộng được chi tiêu cho khách: " + e.getMessage());
             }
@@ -212,10 +213,9 @@ public class SalesMenu {
     }
     // ===================== [10] KHÁCH HÀNG (TV4) =====================
 
-    // Mở menu Quản lý khách hàng của TV4 với quyền ADMIN (được xóa phiếu bảo hành).
+    // Mở menu Quản lý khách hàng của TV4 (được xóa phiếu bảo hành).
     // Chọn [0] trong menu đó sẽ quay lại Menu Admin.
     private void openCustomerMenu() {
-        new CustomerManagementMenu(customerManager, accountManager, salesManager,
-                                   productManager, Role.SALES).show();
-    }
+        new CustomerManagementMenu(customerManager, salesManager, productManager, currentUser).show();
+}
 }

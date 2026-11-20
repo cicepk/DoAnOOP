@@ -49,7 +49,7 @@ public class AdminMenu {
             System.out.println(" [7] Tìm kiếm nhân viên theo Tên hoặc Mã ID");
             System.out.println(" [8] Bảng tính lương nhân viên tháng này");
             System.out.println(" [9] Đăng xuất");
-            System.out.println(" [10] Quản lý khách hàng (TV4)");
+            System.out.println(" [10] Quản lý khách hàng ");
             System.out.println(" [0] Thoát chương trình");
 
             System.out.println("==============================================================");
@@ -344,11 +344,11 @@ public class AdminMenu {
 
     // ===================== [10] KHÁCH HÀNG (TV4) =====================
 
-    // Mở menu Quản lý khách hàng của TV4 với quyền ADMIN (được xóa phiếu bảo hành).
+    // Mở menu Quản lý khách hàng của TV4  (được xóa phiếu bảo hành).
     // Chọn [0] trong menu đó sẽ quay lại Menu Admin.
     private void openCustomerMenu() {
-        new CustomerManagementMenu(customerManager, accountManager, salesManager,
-                                   productManager, Role.ADMIN).show();
+        new CustomerManagementMenu(customerManager, salesManager,
+                                   productManager, currentAccount).show();
     }
 
     // ===================== HÀM NHẬP LIỆU DÙNG CHUNG =====================

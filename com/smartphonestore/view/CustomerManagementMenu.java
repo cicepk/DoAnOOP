@@ -1,7 +1,6 @@
 package com.smartphonestore.view;
 
 import com.smartphonestore.exception.ValidationException;
-import com.smartphonestore.manager.AccountManager;
 import com.smartphonestore.manager.CustomerManager;
 import com.smartphonestore.manager.SalesManager;
 import com.smartphonestore.manager.ProductManager;
@@ -9,6 +8,7 @@ import com.smartphonestore.model.product.ProductDetail;
 import com.smartphonestore.model.sale.Invoice;
 import com.smartphonestore.model.sale.InvoiceDetail;
 import com.smartphonestore.model.product.Product;
+import com.smartphonestore.model.auth.Account;
 import com.smartphonestore.model.customer.*;
 import com.smartphonestore.model.enums.Role;
 import com.smartphonestore.util.DateUtil;
@@ -20,45 +20,40 @@ import java.util.List;
 /**
  * Menu "QUẢN LÝ KHÁCH HÀNG" dành cho ADMIN và nhân viên BÁN HÀNG (TV4).
  * Gọi từ AdminMenu (TV1) và SalesMenu (TV3):
- *     new CustomerManagementMenu(customerManager, accountManager, SalesManager, productManager, role).show();
+ *     new CustomerManagementMenu(customerManager, SalesManager, productManager, currentUser 
  */
 public class CustomerManagementMenu {
     private final CustomerManager manager;
-    private final AccountManager accountManager;
     private final SalesManager salesManager;
     private final ProductManager productManager;
     private final Role role;
 
-    public CustomerManagementMenu(CustomerManager manager, AccountManager accountManager, SalesManager salesManager, ProductManager productManager, Role role) {
+    public CustomerManagementMenu(CustomerManager manager,SalesManager salesManager, ProductManager productManager, Account currentUser) {
+        this.role=currentUser.getRole();
         if (role != Role.ADMIN && role != Role.SALES) {
             throw new IllegalArgumentException("Chỉ Quản trị viên và Nhân viên bán hàng được vào menu này");
         }
         this.manager = manager;
-        this.accountManager = accountManager;
         this.salesManager = salesManager;
         this.productManager = productManager;
-        this.role = role;
     }
 
-    /** Chạy đến khi chọn [0], sau đó quay lại menu trước. */
-    public void show() {
+        private boolean isAdmin() { return role == Role.ADMIN; }
+        /** Chạy đến khi chọn [0], sau đó quay lại menu trước. */
+        public void show() {
         while (true) {
-            printMenu();
-            int choice = InputHelper.readInt("Chọn: ", 0, 11);
+            System.out.println("\n========== CHĂM SÓC KHÁCH HÀNG ==========");
+            System.out.println("[1] Hồ sơ khách hàng");
+            System.out.println("[2] Bảo hành");
+                 // nếu nhóm giữ đánh giá (xem mục 4)
+            System.out.println("[0] Quay lại");
+            int choice = InputHelper.readInt("Chọn: ", 0, 2);
             if (choice == 0) return;
             try {
                 switch (choice) {
-                    case 1: listCustomers(); break;
-                    case 2: showDetail(); break;
-                    case 3: addCustomer(); break;
-                    case 4: deleteCustomer(); break;
-                    case 5: searchCustomer(); break;
-                    case 6: checkRank(); break;
-                    case 7: purchaseHistory(); break;
-                    case 8: upgradeVip(); break;
-                    case 9: viewReviews(); break;
-                    case 10: receiveClaim(); break;
-                    case 11: claimMenu(); break;
+                    case 1: profileMenu(); break;
+                    case 2: claimMenu(); break;       // đã có
+                    
                     default: break;
                 }
             } catch (IllegalArgumentException e) {
@@ -67,20 +62,31 @@ public class CustomerManagementMenu {
         }
     }
 
-    private void printMenu() {
-        System.out.println("\n========== QUẢN LÝ KHÁCH HÀNG (" + role.getDisplayName() + ") ==========");
-        System.out.println("[1] Xem danh sách khách hàng");
-        System.out.println("[2] Xem chi tiết một khách theo mã");
-        System.out.println("[3] Thêm khách hàng mới");
-        System.out.println("[4] Xóa khách hàng (chỉ Admin)");
-        System.out.println("[5] Tìm kiếm khách theo tên / SĐT");
-        System.out.println("[6] Tra cứu hạng & tiến trình lên VIP");
-        System.out.println("[7] Lịch sử mua hàng của khách");
-        System.out.println("[8] Nâng khách lên VIP");
-        System.out.println("[9] Xem đánh giá (theo khách / theo sản phẩm)");
-        System.out.println("[10] Tiếp nhận bảo hành (nhập số seri)");
-        System.out.println("[11] Tra cứu & xử lý phiếu bảo hành");
-        System.out.println("[0] Quay lại menu trước");
+    private void profileMenu() {
+        while(true){
+        System.out.println("[1] Danh sách khách hàng");
+        System.out.println("[2] Tìm kiếm (tên / SĐT)");
+        System.out.println("[3] Thông tin chi tiết");
+        System.out.println("[4] Thêm khách hàng");
+        System.out.println("[5] Sửa thông tin liên hệ");
+        if (isAdmin()) System.out.println("[6] Xóa khách hàng");
+        System.out.println("[0] Quay lại");
+        int sub = InputHelper.readInt("Chọn: ", 0, isAdmin() ? 6 : 5);
+        if(sub==0) return;
+        try{
+                switch (sub) {
+                    case 1: listCustomers(); break;
+                    case 2: searchCustomer(); break;
+                    case 3: showDetail(); break;
+                    case 4: addCustomer(); break;
+                    case 5: updateContact(); break;
+                    case 6: deleteCustomer(); break;   // deleteCustomer vẫn kiểm tra role bên trong
+                    default: break;
+                }
+            }catch(RuntimeException e){
+                System.out.println("(!) " + e.getMessage());
+            }
+         }
     }
 
     // ---------- Tiện ích ----------
@@ -116,6 +122,8 @@ public class CustomerManagementMenu {
         System.out.println("Đánh giá    : " + rv.size() + " đánh giá");
         List<WarrantyClaim> cl = manager.getClaimsByCustomer(c.getId());
         System.out.println("Bảo hành    : " + cl.size() + " phiếu (" + manager.countOpenClaims(c.getId()) + " đang xử lý)");
+        System.out.println("--- Lịch sử mua hàng của " + c.getFullName() + " (" + c.getId() + ") ---");
+        PurchaseHistoryView.print(c.getId(), salesManager, productManager);
     }
 
     private void addCustomer() {
@@ -124,18 +132,7 @@ public class CustomerManagementMenu {
         String email = InputHelper.readString("Email: ");
         Customer c = manager.addCustomer(name, phone, email);
         System.out.println("Đã thêm khách hàng, mã: " + c.getId());
-        while (true) {
-            try {
-                createAccountFor(c);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println("(!) " + e.getMessage());
-                if (!confirm("Nhập lại?")) {
-                    System.out.println("Khách đã được thêm nhưng chưa có tài khoản.");
-                    break;
-                }
-            }
-        }
+        
     }
 
     private void deleteCustomer() {
@@ -155,9 +152,8 @@ public class CustomerManagementMenu {
             System.out.println("Đã hủy.");
             return;
         }
-        if (manager.deleteCustomer(c.getId())) {
-            accountManager.removeAccountsByOwnerId(c.getId());   // tài khoản đăng nhập của khách bị xóa
-            System.out.println("Đã xóa khách và tài khoản đăng nhập liên kết (nếu có).");
+        if (manager.deleteCustomer(c.getId())) {  
+            System.out.println("Đã xóa khách hàng.");
         }
     }
 
@@ -172,6 +168,24 @@ public class CustomerManagementMenu {
         for (Customer c : result) c.display();
     }
 
+    private void updateContact() {
+    Customer c = askCustomer();
+    System.out.println("SĐT hiện tại  : " + c.getPhoneNumber());
+    System.out.println("Email hiện tại: " + c.getEmail());
+    System.out.println("[1] Sửa cả SĐT và email");
+    System.out.println("[2] Chỉ sửa SĐT");
+    System.out.println("[3] Chỉ sửa email");
+    System.out.println("[0] Hủy");
+    int choice = InputHelper.readInt("Chọn: ", 0, 3);
+    if (choice == 0) return;
+    String phone = c.getPhoneNumber();
+    String email = c.getEmail();
+    if (choice == 1 || choice == 2) phone = InputHelper.readString("SĐT mới (10 hoặc 11 số, bắt đầu bằng 0): ");
+    if (choice == 1 || choice == 3) email = InputHelper.readString("Email mới: ");
+    manager.updateContact(c.getId(), phone, email);
+    System.out.println("Đã cập nhật thông tin.");
+    }
+
     private void checkRank() {
         Customer c = askCustomer();
         
@@ -179,51 +193,9 @@ public class CustomerManagementMenu {
         System.out.println("Hạng: " + c.evaluateRank());
     }
 
-    private void purchaseHistory() {
-    Customer c = askCustomer();
-    System.out.println("--- Lịch sử mua hàng của " + c.getFullName() + " (" + c.getId() + ") ---");
-    boolean any = false;
-    int paidCount = 0;
-    double paidTotal = 0;
-    for (Invoice inv : salesManager.getAllInvoices()) {
-        if (!c.getId().equalsIgnoreCase(inv.getCustomerId())) continue;
-        any = true;
-        System.out.printf("%s | %s | %s | %,.0f đ (gồm VAT)%n",
-            inv.getId(), inv.getCreationDate(), inv.getStatus(), inv.calculateFinalTotal());
-        for (InvoiceDetail d : salesManager.getDetailsByInvoice(inv.getId())) {
-            ProductDetail pd = productManager.findDetailBySerial(d.getSerialNumber());
-            Product p = (pd == null) ? null : productManager.findByID(pd.getProductId());
-            System.out.printf("      - %s | seri %s | %,.0f đ%n",
-                    p == null ? "(không rõ sản phẩm)" : p.getName(),
-                    d.getSerialNumber(), d.calculateLineTotal());
-        }
-        if ("PAID".equals(inv.getStatus())) {
-            paidCount++;
-            paidTotal += inv.calculateFinalTotal();
-        }
-    }
-    if (!any) {
-        System.out.println("Khách này chưa có hóa đơn nào.");
-        return;
-    }
-    System.out.printf("Đã thanh toán: %d hóa đơn, tổng %,.0f đ%n", paidCount, paidTotal);
-}
-
-    private void upgradeVip() {
-        Customer c = askCustomer();
-        Customer vip = manager.upgradeToVip(c.getId());
-        System.out.println("Đã nâng " + vip.getFullName() + " lên VIP. " + vip.evaluateRank());
-    }
-
+   
+   
     // ---------- Tài khoản ----------
-    private void createAccountFor(Customer c) {
-        System.out.println("Cấp tài khoản cho " + c.getId() + " - " + c.getFullName());
-        String username = InputHelper.readString("Tên đăng nhập (4-20 ký tự chữ, số, _ hoặc .): ");
-        String password = InputHelper.readString("Mật khẩu (từ 6 ký tự): ");
-        String error = accountManager.createAccount(username, password, Role.CUSTOMER, c.getId());
-        if (error != null) throw new IllegalArgumentException(error);
-        System.out.println("Đã cấp tài khoản '" + username + "' cho khách " + c.getId() + ".");
-    }
 
     // ---------- Đánh giá ----------
     private void viewReviews() {
@@ -266,7 +238,7 @@ public class CustomerManagementMenu {
             if (found.length == 0) throw new IllegalArgumentException("Không tìm thấy khách " + key);
             if (found.length > 1) {
                 throw new IllegalArgumentException("Có " + found.length
-                        + " khách khớp, hãy nhập mã khách (dùng mục [5] để tìm)");
+                        + " khách khớp, hãy nhập mã khách (dùng Hồ sơ khách hàng → Tìm kiếm)");
             }
             c = found[0];
         }
@@ -348,27 +320,26 @@ public class CustomerManagementMenu {
     }
 
     private void claimMenu() {
-        System.out.println("[1] Xem phiếu bảo hành của một khách");
-        System.out.println("[2] Tra phiếu theo mã phiếu hoặc số seri");
-        System.out.println("[3] Cập nhật trạng thái phiếu");
-        System.out.println("[4] Xóa phiếu đã đóng (chỉ Admin)");
-        System.out.println("[0] Quay lại Menu trước");
-        int sub = InputHelper.readInt("Chọn: ", 0, 4);
-        switch (sub) {
-            case 1:
-                printClaims(manager.getClaimsByCustomer(askCustomer().getId()));
-                break;
-            case 2:
-                searchClaim();
-                break;
-            case 3:
-                updateClaimStatus();
-                break;
-            case 4:
-                deleteClaim();
-                break;
-            default:
-                break;
+        while (true) {
+            System.out.println("\n--- BẢO HÀNH ---");
+            System.out.println("[1] Tiếp nhận bảo hành");
+            System.out.println("[2] Tra cứu phiếu bảo hành");
+            System.out.println("[3] Cập nhật trạng thái phiếu");
+            if (isAdmin()) System.out.println("[4] Xóa phiếu đã đóng");
+            System.out.println("[0] Quay lại");
+            int sub = InputHelper.readInt("Chọn: ", 0, isAdmin() ? 4 : 3);
+            if (sub == 0) return;
+            try {
+                switch (sub) {
+                    case 1: receiveClaim(); break;
+                    case 2: searchClaim(); break;
+                    case 3: updateClaimStatus(); break;
+                    case 4: deleteClaim(); break;
+                    default: break;
+                }
+            } catch (RuntimeException e) {
+                System.out.println("(!) " + e.getMessage());
+            }
         }
     }
 
@@ -382,14 +353,23 @@ public class CustomerManagementMenu {
     }
 
     private void searchClaim() {
-        String key = InputHelper.readString("Nhập mã phiếu (CLM01) hoặc số seri: ");
+        String key = InputHelper.readString("Nhập SĐT, mã phiếu (CLM01), số seri hoặc mã đơn (INV01): ");
+
         WarrantyClaim w = manager.findClaimById(key);
-        if (w != null) {
-            WarrantyClaim.printHeader();
-            w.display();
-        } else {
-            printClaims(manager.getClaimsBySerial(key));
+        if (w != null) { printClaims(java.util.Collections.singletonList(w)); return; }
+
+        if (salesManager.findInvoice(key) != null) {            // mã đơn -> các seri trong đơn
+            List<WarrantyClaim> all = new java.util.ArrayList<>();
+            for (InvoiceDetail d : salesManager.getDetailsByInvoice(key)) {
+                all.addAll(manager.getClaimsBySerial(d.getSerialNumber()));
+            }
+            printClaims(all);
+            return;
         }
+        Customer c = manager.findByPhone(key);                    // SĐT -> phiếu của khách
+        if (c != null) { printClaims(manager.getClaimsByCustomer(c.getId())); return; }
+
+        printClaims(manager.getClaimsBySerial(key));              // còn lại: coi là số seri
     }
 
     private void updateClaimStatus() {
