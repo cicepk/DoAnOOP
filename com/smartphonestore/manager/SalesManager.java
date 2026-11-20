@@ -64,6 +64,14 @@ public class SalesManager {
     }
 
     public List<Invoice> getAllInvoices() { return new ArrayList<>(invoices); }
+    /** Các hóa đơn của 1 khách (dùng cho admin/sales và cho chính khách đó). */
+    public List<Invoice> getInvoicesByCustomer(String customerId) {
+        List<Invoice> result = new ArrayList<>();
+        if (customerId == null) return result;
+        for (Invoice inv : invoices)
+            if (customerId.equalsIgnoreCase(inv.getCustomerId())) result.add(inv);
+        return result;
+    }
     public List<InvoiceDetail> getDetailsByInvoice(String invoiceId) {
         List<InvoiceDetail> result = new ArrayList<>();
         for (InvoiceDetail detail : details)

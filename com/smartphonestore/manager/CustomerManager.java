@@ -61,6 +61,13 @@ public class CustomerManager {
         }
         customers = Arrays.copyOf(temp, n);   // cắt ô thừa, mảng không còn null
 
+        // Dữ liệu cũ có khách STANDARD đã chi tiêu đủ ngưỡng thì nâng VIP luôn
+        boolean upgraded = false;
+        for (Customer c : customers) {
+            if (autoUpgradeIfEligible(c) != c) upgraded = true;
+        }
+        if (upgraded) saveCustomers();
+
         reviews.clear();
         for (String line : FileIO.readLines(REVIEW_FILE)) {
             try {
@@ -254,33 +261,37 @@ public class CustomerManager {
         return Arrays.copyOf(customers, customers.length);
     }
 
-    /** Nâng STANDARD lên VIP: tạo VipCustomer mới, giữ nguyên mã, thông tin và tổng chi tiêu. */
-    public Customer upgradeToVip(String id) {
-        Customer old = requireCustomer(id);
-        if (!(old instanceof StandardCustomer)) {
-            throw new ValidationException("Khách hàng đã là VIP");
-        }
-        StandardCustomer sc = (StandardCustomer) old;
-        if (!sc.isEligibleForUpgrade()) {
-            throw new ValidationException(String.format(
-                    "Chưa đủ điều kiện lên VIP: còn thiếu %,.0f đ", StandardCustomer.VIP_THRESHOLD - sc.getTotalSpent()));
-        }
+    /**
+     * Tự nâng STANDARD lên VIP khi tổng chi tiêu đạt ngưỡng VIP_THRESHOLD:
+     * tạo VipCustomer mới (giữ nguyên mã, thông tin, tổng chi tiêu) và thay vào mảng.
+     * Không lưu file, người gọi tự lưu.
+     * @return khách sau khi xét (object VIP mới nếu vừa được nâng, ngược lại là chính c)
+     */
+    private Customer autoUpgradeIfEligible(Customer c) {
+        if (!(c instanceof StandardCustomer)) return c;
+        StandardCustomer sc = (StandardCustomer) c;
+        if (!sc.isEligibleForUpgrade()) return c;
         Customer vip = new VipCustomer(sc.getId(), sc.getFullName(), sc.getPhoneNumber(), sc.getEmail(),
                 sc.getTotalSpent(), VipCustomer.DEFAULT_DISCOUNT_RATE);
         for (int i = 0; i < customers.length; i++) {
-            if (customers[i] == old) customers[i] = vip;
+            if (customers[i] == c) customers[i] = vip;
         }
-        saveCustomers();
         return vip;
     }
 
     // ---------- Hàm TV3 gọi ----------
-    /** TV3 gọi sau khi thanh toán xong: cộng chi tiêu, tăng số lần mua (khách STANDARD). */
-    public void recordPurchase(String customerId, double amount) {
+    /**
+     * TV3 gọi sau khi thanh toán xong: cộng chi tiêu, tăng số lần mua (khách STANDARD),
+     * chi tiêu đạt ngưỡng thì tự nâng VIP.
+     * @return true nếu khách vừa được tự động nâng lên VIP
+     */
+    public boolean recordPurchase(String customerId, double amount) {
         Customer c = requireCustomer(customerId);
         c.accumulateSpending(amount);
         if (c instanceof StandardCustomer) ((StandardCustomer) c).increaseVisit();
+        boolean upgraded = autoUpgradeIfEligible(c) != c;
         saveCustomers();
+        return upgraded;
     }
 
     /** TV3 gọi khi hủy hóa đơn đã ghi nhận: trừ lại số tiền. */

@@ -44,7 +44,7 @@ public class CustomerManagementMenu {
     public void show() {
         while (true) {
             printMenu();
-            int choice = InputHelper.readInt("Chọn: ", 0, 11);
+            int choice = InputHelper.readInt("Chọn: ", 0, 10);
             if (choice == 0) return;
             try {
                 switch (choice) {
@@ -55,10 +55,9 @@ public class CustomerManagementMenu {
                     case 5: searchCustomer(); break;
                     case 6: checkRank(); break;
                     case 7: purchaseHistory(); break;
-                    case 8: upgradeVip(); break;
-                    case 9: viewReviews(); break;
-                    case 10: receiveClaim(); break;
-                    case 11: claimMenu(); break;
+                    case 8: viewReviews(); break;
+                    case 9: receiveClaim(); break;
+                    case 10: claimMenu(); break;
                     default: break;
                 }
             } catch (IllegalArgumentException e) {
@@ -76,10 +75,9 @@ public class CustomerManagementMenu {
         System.out.println("[5] Tìm kiếm khách theo tên / SĐT");
         System.out.println("[6] Tra cứu hạng & tiến trình lên VIP");
         System.out.println("[7] Lịch sử mua hàng của khách");
-        System.out.println("[8] Nâng khách lên VIP");
-        System.out.println("[9] Xem đánh giá (theo khách / theo sản phẩm)");
-        System.out.println("[10] Tiếp nhận bảo hành (nhập số seri)");
-        System.out.println("[11] Tra cứu & xử lý phiếu bảo hành");
+        System.out.println("[8] Xem đánh giá (theo khách / theo sản phẩm)");
+        System.out.println("[9] Tiếp nhận bảo hành (nhập số seri)");
+        System.out.println("[10] Tra cứu & xử lý phiếu bảo hành");
         System.out.println("[0] Quay lại menu trước");
     }
 
@@ -182,38 +180,8 @@ public class CustomerManagementMenu {
     private void purchaseHistory() {
     Customer c = askCustomer();
     System.out.println("--- Lịch sử mua hàng của " + c.getFullName() + " (" + c.getId() + ") ---");
-    boolean any = false;
-    int paidCount = 0;
-    double paidTotal = 0;
-    for (Invoice inv : salesManager.getAllInvoices()) {
-        if (!c.getId().equalsIgnoreCase(inv.getCustomerId())) continue;
-        any = true;
-        System.out.printf("%s | %s | %s | %,.0f đ (gồm VAT)%n",
-            inv.getId(), inv.getCreationDate(), inv.getStatus(), inv.calculateFinalTotal());
-        for (InvoiceDetail d : salesManager.getDetailsByInvoice(inv.getId())) {
-            ProductDetail pd = productManager.findDetailBySerial(d.getSerialNumber());
-            Product p = (pd == null) ? null : productManager.findByID(pd.getProductId());
-            System.out.printf("      - %s | seri %s | %,.0f đ%n",
-                    p == null ? "(không rõ sản phẩm)" : p.getName(),
-                    d.getSerialNumber(), d.calculateLineTotal());
-        }
-        if ("PAID".equals(inv.getStatus())) {
-            paidCount++;
-            paidTotal += inv.calculateFinalTotal();
-        }
-    }
-    if (!any) {
-        System.out.println("Khách này chưa có hóa đơn nào.");
-        return;
-    }
-    System.out.printf("Đã thanh toán: %d hóa đơn, tổng %,.0f đ%n", paidCount, paidTotal);
+    PurchaseHistoryView.print(c.getId(), salesManager, productManager);
 }
-
-    private void upgradeVip() {
-        Customer c = askCustomer();
-        Customer vip = manager.upgradeToVip(c.getId());
-        System.out.println("Đã nâng " + vip.getFullName() + " lên VIP. " + vip.evaluateRank());
-    }
 
     // ---------- Tài khoản ----------
     private void createAccountFor(Customer c) {

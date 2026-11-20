@@ -88,13 +88,13 @@ public class SalesMenu {
 
     private void createInvoice() {
         String invoiceId = salesManager.nextInvoiceId();
-        String customerId = InputHelper.readString("Mã khách hàng (nhập KHACHLE nếu khách lẻ): ")
+        String customerId = InputHelper.readString("Mã khách hàng: ")
                 .trim().toUpperCase();
         if ("KHACHLE".equals(customerId)) {
             customerId = "";
         } else if (customerManager == null || customerManager.findById(customerId) == null) {
             System.out.println("(!) Không tìm thấy khách hàng " + customerId
-                    + ". Tạo hồ sơ khách trước hoặc chọn KHACHLE.");
+                    + ". Tạo hồ sơ khách trước");
             return;
         }
         List<InvoiceDetail> lines = new ArrayList<>();
@@ -185,7 +185,9 @@ public class SalesMenu {
         // Hóa đơn đã PAID ở bước trên, nên lỗi cộng chi tiêu khách chỉ báo lại, không được dừng giữa chừng
         if (!invoice.getCustomerId().isEmpty() && customerManager != null) {
             try {
-                customerManager.recordPurchase(invoice.getCustomerId(), paidTotal);
+                if (customerManager.recordPurchase(invoice.getCustomerId(), paidTotal)) {
+                    System.out.println("[OK] Khách " + invoice.getCustomerId() + " đã đủ chi tiêu, được tự động nâng lên VIP!");
+                }
             } catch (IllegalArgumentException e) {
                 System.out.println("(!) Không cộng được chi tiêu cho khách: " + e.getMessage());
             }

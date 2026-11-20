@@ -67,7 +67,7 @@ public class CustomerMenu {
 
     private void printMenu(Customer me) {
         System.out.println("\n========== KHÁCH HÀNG: " + me.getFullName() + " (" + me.getType() + ") ==========");
-        System.out.println("[1] Xem hồ sơ & chi tiêu tích lũy");
+        System.out.println("[1] Xem hồ sơ, chi tiêu tích lũy & lịch sử mua hàng");
         System.out.println("[2] Cập nhật SĐT / Email");
         System.out.println("[3] Hạng thành viên & tiến trình lên VIP");
         System.out.println("[4] Đặc quyền giảm giá VIP");
@@ -81,6 +81,9 @@ public class CustomerMenu {
     private void viewProfile(Customer me) {
         Customer.printHeader();
         me.display();
+        System.out.printf("Tổng chi tiêu tích lũy: %,.0f đ%n", me.getTotalSpent());
+        System.out.println("\n--- Lịch sử mua hàng của bạn ---");
+        PurchaseHistoryView.print(customerId, salesManager, productManager);   // chỉ hóa đơn của chính mình
     }
 
     /** Các sản phẩm khách này đã mua và đã thanh toán, mỗi sản phẩm chỉ xuất hiện một lần. */
