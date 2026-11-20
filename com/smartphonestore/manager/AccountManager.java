@@ -77,7 +77,7 @@ public class AccountManager {
         return null;
     }
 
-    // Tìm bằng EMP/CUS
+    // Tìm bằng mã nhân viên EMPxx
     public Account findByLinkedId(String linkedId) {
         if (linkedId == null) return null;
         for (Account acc : accounts) {
@@ -129,9 +129,7 @@ public class AccountManager {
         }
         if (role == null) return "Vai trò không hợp lệ.";
         if (!Account.isValidLink(role, linkedId)) {
-            return role.isStaff()
-                ? "Tài khoản nhân viên phải liên kết với mã EMPxx."
-                : "Tài khoản khách hàng phải liên kết với mã CUSxx.";
+            return "Tài khoản phải liên kết với mã nhân viên EMPxx.";
         }
         if (findByLinkedId(linkedId) != null) {
             return "Mã " + linkedId.toUpperCase() + " đã có tài khoản rồi.";
@@ -143,10 +141,22 @@ public class AccountManager {
         return null;
     }
 
+    // Admin cấp lại mật khẩu cho nhân viên (không cần mật khẩu cũ)
     public boolean changePassword(String id, String newPass) {
         Account acc = findById(id);
         if (acc == null || !acc.changePassword(newPass)) return false;
         return saveToFile();
+    }
+
+    // Nhân viên tự đổi mật khẩu của mình: phải nhập đúng mật khẩu cũ.
+    // Trả null nếu thành công, ngược lại trả lý do lỗi để menu in ra (giống createAccount)
+    public String changeOwnPassword(String id, String oldPass, String newPass) {
+        Account acc = findById(id);
+        if (acc == null) return "Không tìm thấy tài khoản.";
+        if (!acc.checkPassword(oldPass)) return "Mật khẩu cũ không đúng.";
+        if (oldPass.equals(newPass)) return "Mật khẩu mới phải khác mật khẩu cũ.";
+        if (!acc.changePassword(newPass)) return "Mật khẩu mới phải từ 6 ký tự và không chứa ký tự '|'.";
+        return saveToFile() ? null : "Lỗi lưu file.";
     }
     // Đếm số lượng acc Admin
     private int countActiveAdmins() {
@@ -179,26 +189,6 @@ public class AccountManager {
         Account acc = findByLinkedId(linkedId);
         if (acc == null) return false;
         if (acc.getStatus().equals("ACTIVE")) acc.lockToggle();
-        return saveToFile();
-    }
-
-    // ===================== DÀNH CHO TV4 (KHÁCH HÀNG) =====================
-
-    // Nhân viên cấp tài khoản cho khách. False nếu trùng username, khách đã có tài khoản,
-    // mật khẩu không hợp lệ hoặc mã không phải CUSxx
-    public boolean createCustomerAccount(String customerId, String username, String password) {
-        return createAccount(username, password, Role.CUSTOMER, customerId) == null;
-    }
-
-    // Xóa khách thì XÓA luôn tài khoản (không khóa như nhân viên),
-    // vì mã khách có thể được cấp lại, tài khoản cũ sẽ đăng nhập nhầm vào khách mới.
-    // Chỉ xóa tài khoản CUSTOMER để không lỡ tay xóa tài khoản nhân viên
-    public boolean removeAccountsByOwnerId(String ownerId) {
-        if (ownerId == null) return false;
-        String id = ownerId.trim();
-        boolean removed = accounts.removeIf(acc ->
-            acc.getRole() == Role.CUSTOMER && acc.getLinkedId().equalsIgnoreCase(id));
-        if (!removed) return false;
         return saveToFile();
     }
 }

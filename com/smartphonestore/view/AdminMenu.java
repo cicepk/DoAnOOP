@@ -12,17 +12,23 @@ import com.smartphonestore.model.auth.SalesStaff;
 import com.smartphonestore.model.auth.WarehouseStaff;
 import com.smartphonestore.model.enums.Role;
 import com.smartphonestore.util.InputHelper;
+import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Menu ADMIN (chủ / quản lý cửa hàng, toàn quyền).
+ * [1] Báo cáo  [2] Nhân sự  [3] Kho  [4] Bán hàng  [5] Đổi mật khẩu  [0] Đăng xuất
+ * Kho và Bán hàng dùng lại nguyên menu của nhân viên, truyền Account admin vào để hiện thêm mục ★.
+ */
 public class AdminMenu {
     private final AccountManager accountManager;
     private final EmployeeManager employeeManager;
-    private final ProductManager productManager;   // 3 manager này chỉ để chuyển tiếp
-    private final SalesManager salesManager;       // cho menu Quản lý khách hàng (TV4)
-    private final CustomerManager customerManager;
-    private final Account currentAccount; // admin đang đăng nhập
+    private final ProductManager productManager;   // chuyển tiếp cho menu Kho, Bán hàng, Báo cáo
+    private final SalesManager salesManager;       // doanh số, báo cáo, chặn xóa nhân viên đã bán hàng
+    private final CustomerManager customerManager; // chuyển tiếp cho menu Bán hàng
+    private final Account currentAccount;          // admin đang đăng nhập
 
     public AdminMenu(AccountManager accountManager, EmployeeManager employeeManager, ProductManager productManager,
                      SalesManager salesManager, CustomerManager customerManager, Account currentAccount) {
@@ -34,103 +40,162 @@ public class AdminMenu {
         this.currentAccount = currentAccount;
     }
 
+    // ===================== MENU CHÍNH =====================
     public void displayMenu() {
         while (true) {
             System.out.println("\n==============================================================");
-            System.out.println("             MENU DÀNH CHO ADMIN                ");
-
+            System.out.println("                         MENU QUẢN TRỊ                          ");
             System.out.println("==============================================================");
-            System.out.println(" [1] Xem danh sách toàn bộ tài khoản hệ thống");
-            System.out.println(" [2] Đổi mật khẩu & Khóa / Mở khóa tài khoản");
-            System.out.println(" [3] Xem danh sách toàn bộ nhân sự cửa hàng");
-            System.out.println(" [4] Thêm nhân viên mới (Admin / Kho / Bán hàng)");
-            System.out.println(" [5] Cập nhật thông tin, lương & chức vụ theo Mã ID");
-            System.out.println(" [6] Xóa nhân viên theo Mã ID");
-            System.out.println(" [7] Tìm kiếm nhân viên theo Tên hoặc Mã ID");
-            System.out.println(" [8] Bảng tính lương nhân viên tháng này");
-            System.out.println(" [9] Đăng xuất");
-            System.out.println(" [10] Quản lý khách hàng (TV4)");
-            System.out.println(" [0] Thoát chương trình");
-
+            System.out.println(" [1] Báo cáo thống kê");
+            System.out.println(" [2] Quản lý nhân sự");
+            System.out.println(" [3] Quản lý kho");
+            System.out.println(" [4] Quản lý bán hàng");
+            System.out.println(" [5] Đổi mật khẩu");
+            System.out.println(" [0] Đăng xuất");
             System.out.println("==============================================================");
-            int choice = InputHelper.readInt("=> Chọn chức năng (0-10): ", 0, 10);
+            int choice = InputHelper.readInt("=> Chọn chức năng (0-5): ", 0, 5);
 
             switch (choice) {
-                case 1: showAllAccounts(); break;
-                case 2: manageAccount(); break;
-                case 3: showAllEmployees(); break;
-                case 4: addEmployee(); break;
-                case 5: updateEmployee(); break;
-                case 6: deleteEmployee(); break;
-                case 7: searchEmployee(); break;
-                case 8: showPayroll(); break;
-                case 9: return; // quay về LoginView
-                case 10: openCustomerMenu(); break;
-                case 0:
-                    accountManager.saveToFile();
-                    employeeManager.saveToFile();
-                    System.out.println("\n[✓] Đã lưu dữ liệu. Tạm biệt!");
-                    System.exit(0);
-                    break;
+                case 1: new ReportMenu(salesManager, productManager).show(); break;
+                case 2: staffMenu(); break;
+                case 3: new WarehouseMenu(productManager, currentAccount).displayMenu(); break;
+                case 4: openSalesMenu(); break;
+                case 5: ChangePasswordView.show(accountManager, currentAccount); break;
+                case 0: return; // về LoginView, không System.exit (manager đã lưu file sau mỗi thao tác)
             }
         }
     }
-    // ===================== [1] [2] TÀI KHOẢN =====================
+
+    // [4] Dùng lại nguyên menu Bán hàng; mã EMPxx của admin được ghi vào hóa đơn nếu admin bán
+    private void openSalesMenu() {
+        // SalesMenu (TV3) chưa nhận Account: khi TV3 đổi constructor thì truyền currentAccount
+        new SalesMenu(salesManager, customerManager, employeeManager,
+                      currentAccount.getLinkedId(), accountManager, productManager).show();
+    }
+
+    // ===================== [2] QUẢN LÝ NHÂN SỰ =====================
+    private void staffMenu() {
+        while (true) {
+            System.out.println("\n--- QUẢN LÝ NHÂN SỰ ---");
+            System.out.println(" [1] Cập nhật nhân viên");
+            System.out.println(" [2] Xem thông tin");
+            System.out.println(" [0] Quay lại");
+            int choice = InputHelper.readInt("=> Chọn (0-2): ", 0, 2);
+            switch (choice) {
+                case 1: updateStaffMenu(); break;
+                case 2: viewStaffMenu(); break;
+                case 0: return;
+            }
+        }
+    }
+
+    private void updateStaffMenu() {
+        while (true) {
+            System.out.println("\n--- CẬP NHẬT NHÂN VIÊN ---");
+            System.out.println(" [1] Thêm nhân viên (tạo tài khoản kèm theo)");
+            System.out.println(" [2] Sửa thông tin (Tên, Chức vụ, Lương)");
+            System.out.println(" [3] Xóa / Cho nghỉ việc");
+            System.out.println(" [4] Cấp lại mật khẩu");
+            System.out.println(" [5] Khóa / Mở khóa tài khoản");
+            System.out.println(" [0] Quay lại");
+            int choice = InputHelper.readInt("=> Chọn (0-5): ", 0, 5);
+            switch (choice) {
+                case 1: addEmployee(); break;
+                case 2: updateEmployee(); break;
+                case 3: deleteEmployee(); break;
+                case 4: resetPassword(); break;
+                case 5: toggleLock(); break;
+                case 0: return;
+            }
+        }
+    }
+
+    private void viewStaffMenu() {
+        while (true) {
+            System.out.println("\n--- XEM THÔNG TIN NHÂN SỰ ---");
+            System.out.println(" [1] Danh sách nhân viên");
+            System.out.println(" [2] Tài khoản nhân viên");
+            System.out.println(" [3] Bảng lương");
+            System.out.println(" [4] Doanh số nhân viên");
+            System.out.println(" [0] Quay lại");
+            int choice = InputHelper.readInt("=> Chọn (0-4): ", 0, 4);
+            switch (choice) {
+                case 1: showAllEmployees(); break;
+                case 2: showAllAccounts(); break;
+                case 3: showPayroll(); break;
+                case 4: showStaffRevenue(); break;
+                case 0: return;
+            }
+        }
+    }
+
+    // ===================== TÀI KHOẢN =====================
     private void showAllAccounts() {
-        System.out.println("\n--- DANH SÁCH TÀI KHOẢN ---");
+        System.out.println("\n--- TÀI KHOẢN NHÂN VIÊN ---");
         System.out.printf("%-6s | %-12s | %-10s | %-7s | %-6s | %s%n",
-            "Mã", "Username", "Vai trò", "Status", "Mã LK", "Đăng nhập cuối");
+            "Mã", "Username", "Vai trò", "Status", "Mã NV", "Đăng nhập cuối");
         for (Account acc : accountManager.getAll()) {
             acc.display();
         }
     }
 
-    private void manageAccount() {
+    // Chọn tài khoản theo mã ACCxx, dùng chung cho Cấp lại mật khẩu và Khóa / Mở khóa
+    private Account chooseAccount() {
         showAllAccounts();
         String id = InputHelper.readString("=> Nhập mã tài khoản (VD: ACC02): ");
         Account acc = accountManager.findById(id);
-        if (acc == null) {
-            System.out.println("[X] Không tìm thấy tài khoản " + id);
+        if (acc == null) System.out.println("[X] Không tìm thấy tài khoản " + id);
+        return acc;
+    }
+
+    // Admin chỉ cấp lại mật khẩu cho người khác; mật khẩu của mình thì tự đổi ở [5]
+    private void resetPassword() {
+        System.out.println("\n--- CẤP LẠI MẬT KHẨU ---");
+        Account acc = chooseAccount();
+        if (acc == null) return;
+        if (acc.getId().equalsIgnoreCase(currentAccount.getId())) {
+            System.out.println("[!] Đây là tài khoản của bạn, hãy dùng mục [5] Đổi mật khẩu ở menu chính.");
             return;
         }
-        System.out.println(" [1] Đổi mật khẩu");
-        System.out.println(" [2] Khóa / Mở khóa (hiện tại: " + acc.getStatus() + ")");
-        System.out.println(" [0] Quay lại");
-        int choice = InputHelper.readInt("=> Chọn (0-2): ", 0, 2);
-
-        if (choice == 1) {
-            String newPassword = InputHelper.readString("=> Mật khẩu mới (từ 6 ký tự): ");
-            if (accountManager.changePassword(acc.getId(), newPassword)) {
-                System.out.println("[✓] Đổi mật khẩu thành công!");
-            } else {
-                System.out.println("[X] Mật khẩu phải từ 6 ký tự và không chứa ký tự '|'.");
-            }
-        } else if (choice == 2) {
-            if (acc.getId().equalsIgnoreCase(currentAccount.getId())) {
-                System.out.println("[X] Không thể tự khóa tài khoản đang đăng nhập.");
-                return;
-            }
-            if (accountManager.toggleLock(acc.getId())) {
-                System.out.println("[✓] Trạng thái mới: " + acc.getStatus());
-            } else {
-                System.out.println("[X] Không thể khóa Admin cuối cùng đang hoạt động.");
-            }
+        String newPassword = InputHelper.readString("=> Mật khẩu mới cho " + acc.getUsername() + " (từ 6 ký tự): ");
+        if (accountManager.changePassword(acc.getId(), newPassword)) {
+            System.out.println("[✓] Đã cấp lại mật khẩu. Hãy nhắc nhân viên tự đổi lại mật khẩu riêng.");
+        } else {
+            System.out.println("[X] Mật khẩu phải từ 6 ký tự và không chứa ký tự '|'.");
         }
     }
-    // ===================== [3] [7] XEM / TÌM NHÂN VIÊN =====================
+
+    private void toggleLock() {
+        System.out.println("\n--- KHÓA / MỞ KHÓA TÀI KHOẢN ---");
+        Account acc = chooseAccount();
+        if (acc == null) return;
+        if (acc.getId().equalsIgnoreCase(currentAccount.getId())) {
+            System.out.println("[X] Không thể tự khóa tài khoản đang đăng nhập.");
+            return;
+        }
+        if (accountManager.toggleLock(acc.getId())) {
+            System.out.println("[✓] Trạng thái mới: " + acc.getStatus());
+        } else {
+            System.out.println("[X] Không thể khóa Admin cuối cùng đang hoạt động.");
+        }
+    }
+
+    // ===================== XEM / TÌM NHÂN VIÊN =====================
     private void showAllEmployees() {
         System.out.println("\n--- DANH SÁCH NHÂN SỰ ---");
         printEmployees(employeeManager.getAll());
+        if (InputHelper.readYesNo("=> Tìm nhân viên theo tên hoặc mã? (Y/N): ")) {
+            searchEmployee();
+        }
     }
 
     private void searchEmployee() {
-        System.out.println("\n--- TÌM KIẾM NHÂN VIÊN ---");
         String keyword = InputHelper.readString("=> Nhập tên hoặc mã cần tìm: ");
         List<Employee> result = employeeManager.searchByNameOrId(keyword);
         System.out.println("Tìm thấy " + result.size() + " nhân viên:");
         printEmployees(result);
     }
-    // In nhân viên
+
     private void printEmployees(List<Employee> list) {
         if (list.isEmpty()) {
             System.out.println("(Không có nhân viên nào)");
@@ -142,7 +207,9 @@ public class AdminMenu {
             e.display();
         }
     }
-    // ===================== [4] THÊM NHÂN VIÊN =====================
+
+    // ===================== THÊM NHÂN VIÊN =====================
+    // Nhân viên nào cũng cần tài khoản -> thêm nhân viên xong tạo tài khoản luôn
     private void addEmployee() {
         System.out.println("\n--- THÊM NHÂN VIÊN MỚI ---");
         Role role = chooseStaffRole("Chọn loại nhân viên");
@@ -162,15 +229,20 @@ public class AdminMenu {
         }
         System.out.println("[✓] Đã thêm nhân viên " + id + " - " + name);
 
-        if (InputHelper.readYesNo("=> Tạo tài khoản đăng nhập cho nhân viên này? (Y/N): ")) {
-            createAccountForEmployee(id, role);
+        System.out.println("--- Tạo tài khoản đăng nhập cho " + id + " ---");
+        while (!createAccountForEmployee(id, role)) {
+            if (!InputHelper.readYesNo("=> Nhập lại thông tin tài khoản? (Y/N): ")) {
+                System.out.println("[!] Nhân viên chưa có tài khoản. Có thể tạo sau ở mục Sửa thông tin.");
+                return;
+            }
         }
     }
+
     // Mã EMPxx còn nằm trong tài khoản (đã khóa) hoặc hóa đơn của nhân viên đã xóa: không cấp lại
     private List<String> usedEmployeeIds() {
         List<String> ids = new ArrayList<>(salesManager.getAllStaffIds());
         for (Account acc : accountManager.getAll()) {
-            if (acc.getRole().isStaff()) ids.add(acc.getLinkedId());
+            ids.add(acc.getLinkedId());
         }
         return ids;
     }
@@ -200,32 +272,33 @@ public class AdminMenu {
                 int overtime = InputHelper.readInt("=> Số giờ tăng ca (0-200): ", 0, 200);
                 return new WarehouseStaff(id, name, phone, salary, hireYear, zone, overtime);
             }
-            default: { // SALES - doanh số bắt đầu = 0, TV3 bán hàng sẽ cộng dần
+            default: { // SALES - doanh số lấy từ hóa đơn thật
                 double rate = InputHelper.readDouble("=> Tỷ lệ hoa hồng (VD 0.03 = 3%): ", 0, 1);
                 return new SalesStaff(id, name, phone, salary, hireYear, rate, 0);
             }
         }
     }
 
-    private void createAccountForEmployee(String employeeId, Role role) {
+    // Trả true nếu tạo được tài khoản
+    private boolean createAccountForEmployee(String employeeId, Role role) {
         if (accountManager.findByLinkedId(employeeId) != null) {
             System.out.println("[X] Nhân viên này đã có tài khoản.");
-            return;
+            return true;
         }
         String username = InputHelper.readString("=> Tên đăng nhập: ");
         String password = InputHelper.readString("=> Mật khẩu (từ 6 ký tự): ");
         String error = accountManager.createAccount(username, password, role, employeeId);
         if (error == null) {
             System.out.println("[✓] Đã tạo tài khoản " + username);
-        } else {
-            System.out.println("[X] " + error);
+            return true;
         }
+        System.out.println("[X] " + error);
+        return false;
     }
 
-    // ===================== [5] CẬP NHẬT NHÂN VIÊN =====================
-
+    // ===================== SỬA THÔNG TIN NHÂN VIÊN =====================
     private void updateEmployee() {
-        System.out.println("\n--- CẬP NHẬT NHÂN VIÊN ---");
+        System.out.println("\n--- SỬA THÔNG TIN NHÂN VIÊN ---");
         Employee e = findEmployeeByInput();
         if (e == null) return;
 
@@ -303,10 +376,11 @@ public class AdminMenu {
         System.out.println("[✓] Đã đổi " + e.getId() + " sang " + newRole.getDisplayName());
     }
 
-    // ===================== [6] XÓA NHÂN VIÊN =====================
-
+    // ===================== XÓA / CHO NGHỈ VIỆC =====================
+    // Đã lập hóa đơn -> chỉ khóa tài khoản, giữ hồ sơ để báo cáo doanh số còn tên người lập
+    // Chưa lập hóa đơn nào -> xóa hẳn như cũ
     private void deleteEmployee() {
-        System.out.println("\n--- XÓA NHÂN VIÊN ---");
+        System.out.println("\n--- XÓA / CHO NGHỈ VIỆC ---");
         Employee e = findEmployeeByInput();
         if (e == null) return;
 
@@ -314,6 +388,25 @@ public class AdminMenu {
             System.out.println("[X] Không thể tự xóa chính mình.");
             return;
         }
+
+        if (salesManager.hasInvoicesOfStaff(e.getId())) {
+            System.out.println("[!] Nhân viên này đã lập hóa đơn, xóa hẳn sẽ mất người lập trong báo cáo doanh số.");
+            if (!InputHelper.readYesNo("=> Cho " + e.getFullName() + " nghỉ việc (khóa tài khoản)? (Y/N): ")) {
+                System.out.println("[!] Đã hủy.");
+                return;
+            }
+            if (e.getRole() == Role.ADMIN && countActiveAdminAccounts() <= 1) {
+                System.out.println("[X] Đây là Admin cuối cùng đang hoạt động, không thể cho nghỉ việc.");
+                return;
+            }
+            if (accountManager.lockByLinkedId(e.getId())) {
+                System.out.println("[✓] Đã cho nghỉ việc: tài khoản của " + e.getId() + " đã bị khóa.");
+            } else {
+                System.out.println("[!] Nhân viên này chưa có tài khoản, không cần khóa.");
+            }
+            return;
+        }
+
         if (!InputHelper.readYesNo("=> Xác nhận xóa " + e.getFullName() + "? (Y/N): ")) {
             System.out.println("[!] Đã hủy.");
             return;
@@ -328,31 +421,74 @@ public class AdminMenu {
         }
     }
 
-    // ===================== [8] BẢNG LƯƠNG =====================
-
-    private void showPayroll() {
-        System.out.println("\n--- BẢNG LƯƠNG THÁNG NÀY ---");
-        System.out.printf("%-6s | %-22s | %-10s | %15s | %s%n",
-            "Mã", "Họ tên", "Chức vụ", "Lương tháng", "Chi tiết");
-        for (Employee e : employeeManager.getAll()) {
-            // Đa hình: cùng gọi calculateSalary() nhưng mỗi lớp con tính một kiểu
-            System.out.printf("%-6s | %-22s | %-10s | %,15.0f | %s%n",
-                e.getId(), e.getFullName(), e.getRole().name(), e.calculateSalary(), e.getExtraInfo());
+    private int countActiveAdminAccounts() {
+        int count = 0;
+        for (Account acc : accountManager.getAll()) {
+            if (acc.getRole() == Role.ADMIN && acc.getStatus().equals("ACTIVE")) count++;
         }
-        System.out.printf("TỔNG QUỸ LƯƠNG: %,.0f VNĐ%n", employeeManager.getTotalSalary());
+        return count;
     }
 
-    // ===================== [10] KHÁCH HÀNG (TV4) =====================
+    // Tài khoản bị khóa = đã nghỉ việc / tạm ngưng -> không tính lương
+    private boolean isAccountLocked(Employee e) {
+        Account acc = accountManager.findByLinkedId(e.getId());
+        return acc != null && acc.getStatus().equals("LOCKED");
+    }
 
-    // Mở menu Quản lý khách hàng của TV4 với quyền ADMIN (được xóa phiếu bảo hành).
-    // Chọn [0] trong menu đó sẽ quay lại Menu Admin.
-    private void openCustomerMenu() {
-        new CustomerManagementMenu(customerManager, accountManager, salesManager,
-                                   productManager, Role.ADMIN).show();
+    // ===================== BẢNG LƯƠNG =====================
+    // Lương bán hàng = lương CB + doanh số tháng này (lấy từ hóa đơn PAID thật) x tỷ lệ hoa hồng
+    private void showPayroll() {
+        LocalDate now = LocalDate.now();
+        int month = now.getMonthValue();
+        int year = now.getYear();
+        System.out.println("\n--- BẢNG LƯƠNG THÁNG " + month + "/" + year + " ---");
+        System.out.printf("%-6s | %-22s | %-10s | %15s | %s%n",
+            "Mã", "Họ tên", "Chức vụ", "Lương tháng", "Chi tiết");
+        double total = 0;
+        for (Employee e : employeeManager.getAll()) {
+            if (isAccountLocked(e)) {
+                System.out.printf("%-6s | %-22s | %-10s | %15s | %s%n",
+                    e.getId(), e.getFullName(), e.getRole().name(), "-", "Tài khoản đã khóa (nghỉ việc)");
+                continue;
+            }
+            double salary;
+            String detail;
+            if (e instanceof SalesStaff) {
+                SalesStaff ss = (SalesStaff) e;
+                double revenue = salesManager.revenueByStaff(e.getId(), month, year);
+                salary = ss.getBaseSalary() + revenue * ss.getCommissionRate();
+                detail = String.format("Hoa hồng %.1f%% | Doanh số tháng: %,.0f",
+                    ss.getCommissionRate() * 100, revenue);
+            } else {
+                salary = e.calculateSalary(); // đa hình: mỗi lớp con tính một kiểu
+                detail = e.getExtraInfo();
+            }
+            total += salary;
+            System.out.printf("%-6s | %-22s | %-10s | %,15.0f | %s%n",
+                e.getId(), e.getFullName(), e.getRole().name(), salary, detail);
+        }
+        System.out.printf("TỔNG QUỸ LƯƠNG: %,.0f VNĐ%n", total);
+    }
+
+    // ===================== DOANH SỐ NHÂN VIÊN =====================
+    private void showStaffRevenue() {
+        System.out.println("\n--- DOANH SỐ NHÂN VIÊN ---");
+        int month = InputHelper.readInt("=> Tháng (1-12): ", 1, 12);
+        int year = InputHelper.readInt("=> Năm: ", 2000, Year.now().getValue());
+
+        System.out.printf("%-6s | %-22s | %-10s | %18s%n", "Mã", "Họ tên", "Chức vụ", "Doanh số (VNĐ)");
+        double total = 0;
+        for (Employee e : employeeManager.getAll()) {
+            if (e.getRole() == Role.WAREHOUSE) continue; // nhân viên kho không bán hàng
+            double revenue = salesManager.revenueByStaff(e.getId(), month, year);
+            total += revenue;
+            System.out.printf("%-6s | %-22s | %-10s | %,18.0f%n",
+                e.getId(), e.getFullName(), e.getRole().name(), revenue);
+        }
+        System.out.printf("TỔNG DOANH SỐ THÁNG %d/%d: %,.0f VNĐ%n", month, year, total);
     }
 
     // ===================== HÀM NHẬP LIỆU DÙNG CHUNG =====================
-
     private Employee findEmployeeByInput() {
         String id = InputHelper.readString("=> Nhập mã nhân viên (VD: EMP02): ");
         Employee e = employeeManager.findById(id);
@@ -387,5 +523,4 @@ public class AdminMenu {
             System.out.println("(!) Khu kho phải có dạng KHO_A, KHO_B, ...");
         }
     }
-
 }

@@ -10,8 +10,7 @@ public class Account {
     private Role role;
     private String status;
     private String lastLoginTime;
-    // Nhân viên (ADMIN/WAREHOUSE/SALES) -> mã EMPxx trong employees.txt
-    // Khách hàng (CUSTOMER)             -> mã CUSxx trong customers.txt
+    // Mọi tài khoản đều là nhân viên -> mã EMPxx trong employees.txt
     private final String linkedId;
 
     public Account(String id, String username, String password, Role role,
@@ -26,11 +25,10 @@ public class Account {
             ? "Chưa đăng nhập" : lastLoginTime;
         this.linkedId = linkedId;
     }
-    // Kiểm tra mã liên kết có đúng loại với role không (dùng trước khi tạo tài khoản)
+    // Kiểm tra mã liên kết có phải mã nhân viên EMPxx không (dùng trước khi tạo tài khoản)
     public static boolean isValidLink(Role role, String linkedId) {
         if (role == null || linkedId == null) return false;
-        String prefix = role.isStaff() ? "EMP" : "CUS";
-        return linkedId.trim().toUpperCase().startsWith(prefix);
+        return linkedId.trim().toUpperCase().matches("EMP\\d+");
     }
     public boolean isLinkValid() {
         return isValidLink(role, linkedId);
@@ -46,12 +44,12 @@ public class Account {
         if (role == null) {
             return false;
         }
-        // Không cho đổi qua lại giữa nhân viên và khách, vì linkedId sẽ sai loại
-        if (role.isStaff() != this.role.isStaff()) {
-            return false;
-        }
         this.role = role;
         return true;
+    }
+    // Kiểm tra mật khẩu cũ khi tự đổi mật khẩu (không cần ACTIVE như checkLogin)
+    public boolean checkPassword(String pass) {
+        return pass != null && password.equals(pass);
     }
     // check đăng nhập
     public boolean checkLogin(String userName, String userPassword) {

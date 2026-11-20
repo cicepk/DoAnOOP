@@ -122,18 +122,6 @@ public class CustomerManagementMenu {
         String email = InputHelper.readString("Email: ");
         Customer c = manager.addCustomer(name, phone, email);
         System.out.println("Đã thêm khách hàng, mã: " + c.getId());
-        while (true) {
-            try {
-                createAccountFor(c);
-                break;
-            } catch (IllegalArgumentException e) {
-                System.out.println("(!) " + e.getMessage());
-                if (!confirm("Nhập lại?")) {
-                    System.out.println("Khách đã được thêm nhưng chưa có tài khoản.");
-                    break;
-                }
-            }
-        }
     }
 
     private void deleteCustomer() {
@@ -154,8 +142,7 @@ public class CustomerManagementMenu {
             return;
         }
         if (manager.deleteCustomer(c.getId())) {
-            accountManager.removeAccountsByOwnerId(c.getId());   // tài khoản đăng nhập của khách bị xóa
-            System.out.println("Đã xóa khách và tài khoản đăng nhập liên kết (nếu có).");
+            System.out.println("Đã xóa khách hàng " + c.getId() + ".");
         }
     }
 
@@ -182,16 +169,6 @@ public class CustomerManagementMenu {
     System.out.println("--- Lịch sử mua hàng của " + c.getFullName() + " (" + c.getId() + ") ---");
     PurchaseHistoryView.print(c.getId(), salesManager, productManager);
 }
-
-    // ---------- Tài khoản ----------
-    private void createAccountFor(Customer c) {
-        System.out.println("Cấp tài khoản cho " + c.getId() + " - " + c.getFullName());
-        String username = InputHelper.readString("Tên đăng nhập (4-20 ký tự chữ, số, _ hoặc .): ");
-        String password = InputHelper.readString("Mật khẩu (từ 6 ký tự): ");
-        String error = accountManager.createAccount(username, password, Role.CUSTOMER, c.getId());
-        if (error != null) throw new IllegalArgumentException(error);
-        System.out.println("Đã cấp tài khoản '" + username + "' cho khách " + c.getId() + ".");
-    }
 
     // ---------- Đánh giá ----------
     private void viewReviews() {

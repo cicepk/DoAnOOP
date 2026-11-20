@@ -9,8 +9,11 @@ import com.smartphonestore.util.DateUtil;
 import com.smartphonestore.util.FileIO;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Quan ly hoa don, chi tiet hoa don va thanh toan. ProductManager la nguon serial duy nhat. */
@@ -258,5 +261,84 @@ public class SalesManager {
             }
         }
         return total;
+    }
+
+    // ===================== BÁO CÁO / DOANH SỐ (Admin dùng) =====================
+
+    /** Nhân viên đã lập hóa đơn nào chưa (kể cả UNPAID / CANCELLED). Dùng để "cho nghỉ việc" thay vì xóa. */
+    public boolean hasInvoicesOfStaff(String staffId) {
+        if (staffId == null || staffId.trim().isEmpty()) return false;
+        for (Invoice invoice : invoices) {
+            if (invoice.getSalesStaffId().equalsIgnoreCase(staffId.trim())) return true;
+        }
+        return false;
+    }
+
+    /** Ngày lập của hóa đơn; sai định dạng thì trả null để bỏ qua hóa đơn đó. */
+    private LocalDate dateOf(Invoice invoice) {
+        try {
+            return DateUtil.parse(invoice.getCreationDate());
+        } catch (RuntimeException e) {
+            System.err.println("Ngày hóa đơn không hợp lệ: " + invoice.getId());
+            return null;
+        }
+    }
+
+    /** Tổng tiền (gồm VAT) các hóa đơn PAID trong một ngày. */
+    public double revenueByDate(LocalDate date) {
+        double total = 0;
+        for (Invoice invoice : invoices) {
+            if (!"PAID".equals(invoice.getStatus())) continue;
+            LocalDate d = dateOf(invoice);
+            if (d != null && d.equals(date)) total += invoice.calculateFinalTotal();
+        }
+        return total;
+    }
+
+    /** Tổng tiền (gồm VAT) các hóa đơn PAID trong một tháng. */
+    public double revenueByMonth(int month, int year) {
+        double total = 0;
+        for (Invoice invoice : invoices) {
+            if (!"PAID".equals(invoice.getStatus())) continue;
+            LocalDate d = dateOf(invoice);
+            if (d != null && d.getMonthValue() == month && d.getYear() == year) {
+                total += invoice.calculateFinalTotal();
+            }
+        }
+        return total;
+    }
+
+    /** Doanh số (gồm VAT) của một nhân viên trong một tháng, chỉ tính hóa đơn PAID. */
+    public double revenueByStaff(String staffId, int month, int year) {
+        if (staffId == null) return 0;
+        double total = 0;
+        for (Invoice invoice : invoices) {
+            if (!"PAID".equals(invoice.getStatus())) continue;
+            if (!invoice.getSalesStaffId().equalsIgnoreCase(staffId.trim())) continue;
+            LocalDate d = dateOf(invoice);
+            if (d != null && d.getMonthValue() == month && d.getYear() == year) {
+                total += invoice.calculateFinalTotal();
+            }
+        }
+        return total;
+    }
+
+    /** Top n sản phẩm bán nhiều nhất (mã SP -> số máy), chỉ đếm hóa đơn PAID, xếp giảm dần. */
+    public Map<String, Integer> topSellingProducts(int n) {
+        Map<String, Integer> count = new HashMap<>();
+        for (Invoice invoice : invoices) {
+            if (!"PAID".equals(invoice.getStatus())) continue;
+            for (InvoiceDetail d : getDetailsByInvoice(invoice.getId())) {
+                count.merge(d.getProductId(), d.getQuantity(), Integer::sum);
+            }
+        }
+        List<Map.Entry<String, Integer>> list = new ArrayList<>(count.entrySet());
+        list.sort((a, b) -> b.getValue() - a.getValue());
+
+        Map<String, Integer> result = new LinkedHashMap<>(); // LinkedHashMap giữ đúng thứ tự đã sắp
+        for (int i = 0; i < Math.min(n, list.size()); i++) {
+            result.put(list.get(i).getKey(), list.get(i).getValue());
+        }
+        return result;
     }
 }
