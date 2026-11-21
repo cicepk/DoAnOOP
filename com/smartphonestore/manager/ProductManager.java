@@ -260,7 +260,18 @@ public class ProductManager {
         productDetails.add(detail);
         return saveDetailsToFile();
     }
-
+// TV3 gọi khi HỦY hóa đơn thu cũ đổi mới: Trả máy cũ lại cho khách (xóa khỏi kho)
+public boolean removeTradeInSerial(String serial) {
+    if (serial == null || serial.trim().isEmpty()) return false;
+    String s = serial.trim();
+    boolean removed = productDetails.removeIf(d -> 
+        d.getSerialNumber().equalsIgnoreCase(s) && TRADE_IN.equals(d.getStatus())
+    );
+    if (removed) {
+        saveDetailsToFile();
+    }
+    return removed;
+}
     // Tự động sinh mã sản phẩm tiếp theo (PRD10, PRD11...)
     public String generateNextID() {
         int maxIndex = 0;

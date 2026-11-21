@@ -359,7 +359,8 @@ public class WarehouseMenu {
         Product newProduct;
         try {
             if (typeChoice == 1) {
-                String os = InputHelper.readString("Nhập hệ điều hành (iOS / Android): ");
+                String os = brand.trim().equalsIgnoreCase("Apple") ? "iOS" : "Android";
+                System.out.println(" [Tự động] Hệ điều hành theo hãng: " + os);
                 int storage = InputHelper.readInt("Nhập dung lượng ROM (GB, ví dụ 128, 256): ", 1, 2048);
                 newProduct = new Smartphone(id, name, brand, sellPrice, 0, threshold, os, storage);
             } else if (typeChoice == 2) {
@@ -608,7 +609,8 @@ public class WarehouseMenu {
                 Product newProduct;
                 try {
                     if (typeChoice == 1) {
-                        String os = InputHelper.readString("Nhập hệ điều hành (iOS / Android): ");
+                        String os = brand.trim().equalsIgnoreCase("Apple") ? "iOS" : "Android";
+                        System.out.println(" [Tự động] Hệ điều hành theo hãng: " + os);
                         int storage = InputHelper.readInt("Nhập dung lượng ROM (GB): ", 1, 2048);
                         newProduct = new Smartphone(id, name, brand, sellPrice, qty, threshold, os, storage);
                     } else if (typeChoice == 2) {
