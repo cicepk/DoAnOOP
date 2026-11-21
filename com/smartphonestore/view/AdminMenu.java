@@ -68,9 +68,8 @@ public class AdminMenu {
 
     // [4] Dùng lại nguyên menu Bán hàng; mã EMPxx của admin được ghi vào hóa đơn nếu admin bán
     private void openSalesMenu() {
-        // SalesMenu (TV3) chưa nhận Account: khi TV3 đổi constructor thì truyền currentAccount
         new SalesMenu(salesManager, customerManager, employeeManager,
-                      currentAccount.getLinkedId(), accountManager, productManager).show();
+                      accountManager, productManager, currentAccount).show();
     }
 
     // ===================== [2] QUẢN LÝ NHÂN SỰ =====================

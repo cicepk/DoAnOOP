@@ -103,7 +103,7 @@ public class SalesManager {
         Product product = productManager.findByID(productDetail.getProductId());
         if (product == null) throw new IllegalArgumentException("Không tìm thấy sản phẩm của serial này.");
         return new InvoiceDetail(invoiceId, product.getId(), product.getName(),
-                productDetail.getSerialNumber(), product.getPrice());
+                productDetail.getSerialNumber(), product.getSalePrice());
     }
 
     public boolean createInvoice(String id, String customerId, String staffId, double vatRate,
@@ -321,6 +321,56 @@ public class SalesManager {
             }
         }
         return total;
+    }
+
+    /** Doanh số của một nhân viên trong ngày, chỉ tính hóa đơn đã thanh toán. */
+    public double revenueByStaffOnDate(String staffId, LocalDate date) {
+        if (staffId == null || date == null) return 0;
+        double total = 0;
+        for (Invoice invoice : invoices) {
+            if (!"PAID".equals(invoice.getStatus()) || !staffId.trim().equalsIgnoreCase(invoice.getSalesStaffId())) continue;
+            LocalDate d = dateOf(invoice);
+            if (date.equals(d)) total += invoice.calculateFinalTotal();
+        }
+        return total;
+    }
+
+    /** Tạo hóa đơn thu cũ đổi mới: máy mới được bán theo serial, giá trị máy cũ là khoản giảm trừ. */
+    public boolean createTradeInInvoice(String id, String customerId, String staffId,
+                                        InvoiceDetail newDevice, double tradeValue, double vatRate) {
+        if (newDevice == null) throw new IllegalArgumentException("Thiếu máy mới.");
+        if (tradeValue < 0 || tradeValue > newDevice.calculateLineTotal())
+            throw new IllegalArgumentException("Giá thu cũ phải nằm trong khoảng giá máy mới.");
+        List<InvoiceDetail> oneLine = new ArrayList<>();
+        oneLine.add(newDevice);
+        return createInvoice(id, customerId, staffId, vatRate, tradeValue, oneLine);
+    }
+
+    /** Hóa đơn có phải hóa đơn thu cũ đổi mới không (tra trong data/trade_ins.txt). */
+    public boolean isTradeInInvoice(String invoiceId) {
+        if (invoiceId == null) return false;
+        for (String line : FileIO.readLines("data/trade_ins.txt")) {
+            String[] f = line.split("\\|", -1);
+            if (f.length > 1 && f[1].trim().equalsIgnoreCase(invoiceId.trim())) return true;
+        }
+        return false;
+    }
+
+    /** Lưu lịch sử thu cũ riêng để đối soát. */
+    public boolean saveTradeIn(String invoiceId, String oldSerial, double tradeValue) {
+        String path = "data/trade_ins.txt";
+        List<String> lines = new ArrayList<>(FileIO.readLines(path));
+        int max = 0;
+        for (String line : lines) {
+            String[] f = line.split("\\|", -1);
+            if (f.length > 0 && f[0].matches("TI\\d+")) {
+                try { max = Math.max(max, Integer.parseInt(f[0].substring(2))); }
+                catch (NumberFormatException ignored) { }
+            }
+        }
+        lines.add(String.format(java.util.Locale.US, "TI%02d|%s|%s|%.0f|%s",
+                max + 1, invoiceId, oldSerial, tradeValue, DateUtil.nowText()));
+        return FileIO.writeLines(path, lines);
     }
 
     /** Top n sản phẩm bán nhiều nhất (mã SP -> số máy), chỉ đếm hóa đơn PAID, xếp giảm dần. */

@@ -13,8 +13,9 @@ public class Invoice implements IPrintable {
     private String status;
     private final double vatTaxRate;
     private List<InvoiceDetail> details;
-    private final double discountAmount; // Tiền giảm giá VIP trên tiền hàng (khách lẻ / khách thường = 0)
-    
+    private final double discountAmount; // Tiền giảm trên tiền hàng: giảm giá VIP hoặc trừ máy thu cũ (không có = 0)
+    private String discountLabel = "Giảm giá VIP"; // nhãn in trên hóa đơn, không lưu file
+
     // Constructor vẫn gọi đc
     public Invoice(String id, String customerId, String salesStaffId, String creationDate,
                    double totalAmount, String status, double vatTaxRate, List<InvoiceDetail> details) {
@@ -46,6 +47,8 @@ public class Invoice implements IPrintable {
     public double calculateFinalTotal() { return totalAmount - discountAmount + calculateVatAmount(); }
     public void setStatus(String status) { this.status = status; }
     public void setDetails(List<InvoiceDetail> details) { this.details = details == null ? new ArrayList<>() : new ArrayList<>(details); }
+    /** Đổi nhãn dòng giảm trừ khi in, ví dụ "Trừ máy thu cũ" cho hóa đơn thu cũ đổi mới. */
+    public void setDiscountLabel(String label) { if (!blank(label)) this.discountLabel = label.trim(); }
 
     @Override public void printReceipt() {
         System.out.println("\n================ HÓA ĐƠN BÁN LẺ ================");
@@ -58,7 +61,7 @@ public class Invoice implements IPrintable {
         }
         System.out.printf("Tiền hàng: %,.0f VND%n", totalAmount);
         //Chỉ in dòng giảm giá khi khách được giảm
-        if (discountAmount > 0) System.out.printf("Giảm giá VIP: -%,.0f VND%n", discountAmount);
+        if (discountAmount > 0) System.out.printf("%s: -%,.0f VND%n", discountLabel, discountAmount);
         System.out.printf("VAT (%.0f%%): %,.0f VND%nTỔNG THANH TOÁN: %,.0f VND%n",
             vatTaxRate * 100, calculateVatAmount(), calculateFinalTotal());
         System.out.println("Trạng thái: " + status);

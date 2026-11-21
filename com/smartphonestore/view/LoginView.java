@@ -89,9 +89,9 @@ public class LoginView {
                 new WarehouseMenu(productManager, acc).displayMenu();
                 break;
             case SALES:
-                // SalesMenu (TV3) chưa nhận Account: tạm truyền mã EMPxx, TV3 đổi constructor thì sửa thành acc
+                // Truyền cả Account: lấy mã EMPxx ghi hóa đơn và dùng cho Đổi mật khẩu
                 new SalesMenu(salesManager, customerManager, employeeManager,
-                              acc.getLinkedId(), accountManager, productManager).show();
+                              accountManager, productManager, acc).show();
                 break;
         }
         System.out.println("[✓] Đã đăng xuất.");
