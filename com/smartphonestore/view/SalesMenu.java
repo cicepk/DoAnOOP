@@ -247,10 +247,8 @@ public class SalesMenu {
         if (salesManager.isTradeInInvoice(invoice.getId())) invoice.setDiscountLabel("Trừ máy thu cũ");
         invoice.printReceipt();
     }
-    // Truyền đúng vai trò người đăng nhập: Admin vào qua Quản lý bán hàng vẫn thấy mục ★
-    // Khi gộp CustomerManagementMenu mới của TV4 (nhận Account) thì đổi thành:
-    //   new CustomerManagementMenu(customerManager, salesManager, productManager, currentUser).show();
+    // Truyền tài khoản đang đăng nhập: Admin vào qua Quản lý bán hàng vẫn thấy mục ★
     private void openCustomerMenu() {
-        new CustomerManagementMenu(customerManager, accountManager, salesManager, productManager, currentUser.getRole()).show();
+        new CustomerManagementMenu(customerManager, salesManager, productManager, currentUser).show();
     }
 }

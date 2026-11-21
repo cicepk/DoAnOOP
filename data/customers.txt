@@ -1,6 +1,6 @@
 # Format: id|fullName|phoneNumber|email|totalSpent|customerType(STANDARD/VIP)|extraValue(VisitCount/VipDiscountRate)
 CUS01|Hoàng Văn Khách|0981112233|gre@gmail.com|51040800|VIP|0.05
-CUS02|Đỗ Thị Thân Thiết|0972223344|dothan@gmail.com|56397600|STANDARD|2
+CUS02|Đỗ Thị Thân Thiết|0972223344|dothan@gmail.com|56397600|VIP|0.05
 CUS03|Vũ Đại Gia|0963334455|vudaigia@vip.com|82101600|VIP|0.05
 CUS04|Bùi Tuấn VIP|0914445566|tuanvip@gmail.com|90989400|VIP|0.05
 CUS05|nguyễn thanh phong|0678543289|phong@gmail.com|0|STANDARD|0
