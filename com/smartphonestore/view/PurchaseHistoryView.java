@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * In lịch sử mua hàng của 1 khách.
- * Dùng chung cho CustomerManagementMenu (admin/sales chọn khách) và CustomerMenu (khách xem của chính mình).
+ * Dùng chung cho CustomerManagementMenu (admin/sales chọn khách)
  */
 public final class PurchaseHistoryView {
     private PurchaseHistoryView() {}

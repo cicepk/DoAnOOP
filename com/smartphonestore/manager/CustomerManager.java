@@ -276,11 +276,12 @@ public class CustomerManager {
         for (int i = 0; i < customers.length; i++) {
             if (customers[i] == c) customers[i] = vip;
         }
+        
         return vip;
     }
 
     // ---------- Hàm TV3 gọi ----------
-    /**
+     /**
      * TV3 gọi sau khi thanh toán xong: cộng chi tiêu, tăng số lần mua (khách STANDARD),
      * chi tiêu đạt ngưỡng thì tự nâng VIP.
      * @return true nếu khách vừa được tự động nâng lên VIP
